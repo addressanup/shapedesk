@@ -26,6 +26,12 @@
   <link rel="stylesheet" href="/css/site.css">
   <script type="module" src="/js/site.js"></script>
 
+  <!-- Vercel Web Analytics; Vercel serves the script, so it 404s on a local server. -->
+  <script>
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
+
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
