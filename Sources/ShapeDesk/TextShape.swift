@@ -45,11 +45,12 @@ enum TextShape {
         ctx.draw(cg, in: CGRect(x: 0, y: 0, width: w, height: h))
 
         // Bitmap row 0 is the top of the image, so (x, y) is already in
-        // y-down screen-style coordinates.
+        // y-down screen-style coordinates. Text is white on black; test the
+        // red channel, not alpha (the black fill is fully opaque too).
         var pixels: [CGPoint] = []
         for y in 0..<h {
             for x in 0..<w {
-                if data[(y * w + x) * 4 + 3] > 128 {
+                if data[(y * w + x) * 4] > 128 {
                     pixels.append(CGPoint(x: x, y: y))
                 }
             }
