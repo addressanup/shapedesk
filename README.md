@@ -4,6 +4,13 @@ A macOS menu bar app that arranges your real desktop icons into shapes —
 heart, circle, star, spiral, wave — or spells out a word with them. Icons
 morph smoothly into formation, and everything is reversible.
 
+<p align="center">
+  <a href="docs/demo.mp4">
+    <img src="docs/demo.webp" width="100%" alt="Real desktop folder icons arranging themselves into a heart, circle, star, spiral and wave, then spelling HELLO">
+  </a>
+</p>
+<p align="center"><a href="docs/demo.mp4"><b>▶ Watch the full 30-second demo with sound</b></a></p>
+
 ## Build & run
 
 ```sh
