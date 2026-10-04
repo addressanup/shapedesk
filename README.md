@@ -11,6 +11,8 @@ morph smoothly into formation, and everything is reversible.
 </p>
 <p align="center"><a href="docs/demo.mp4"><b>▶ Watch the full 30-second demo with sound</b></a></p>
 
+**Website and download:** [shapedesk.space](https://shapedesk.space)
+
 ## Build & run
 
 ```sh
@@ -18,12 +20,32 @@ morph smoothly into formation, and everything is reversible.
 open build/ShapeDesk.app
 ```
 
+To make a release build, run `./release.sh`. It builds a universal
+(Apple Silicon + Intel) app, ad-hoc signs it, and writes
+`dist/ShapeDesk.zip` for a GitHub release. The website's download button
+always points at the `ShapeDesk.zip` asset of the latest release.
+
+The app icon is `AppIcon.icon`, an Icon Composer document (open it in
+Icon Composer, which comes with Xcode 26). `icon.sh` compiles it into the
+app: `Assets.car` for current macOS plus an `AppIcon.icns` fallback.
+Without Xcode 26 or later, `bundle.sh` builds the app without an icon and
+`release.sh` stops.
+
+## Website
+
+`website/` is the static site for shapedesk.space, deployed on Vercel with
+`website/` as the project root (no build step). Its playground runs
+JavaScript ports of `Geometry.swift` and `TextShape.swift` in
+`website/js/`; keep them in step when the shape math changes. Preview it
+locally with `python3 -m http.server -d website 8000`.
+
 A grid icon appears in your menu bar. Click it, pick a shape, done.
 "Reset to grid" puts everything back into a normal sorted grid.
 
 ## Requirements
 
-- macOS 13 or later, Apple Silicon or Intel (Swift toolchain to build).
+- macOS 13 or later, Apple Silicon or Intel (Swift toolchain to build;
+  Xcode 26 or later to include the app icon).
 - **Automation permission**: on first use macOS asks to let ShapeDesk
   control Finder — click OK. If you miss it: System Settings →
   Privacy & Security → Automation → ShapeDesk → Finder.

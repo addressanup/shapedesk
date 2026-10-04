@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2b1b48"/>
+      <stop offset="1" stop-color="#e2784c"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="230" fill="url(#sky)"/>
+  <g fill="#f4eef8"><circle cx="512" cy="353.5" r="52"/><circle cx="620.5" cy="215.6" r="52"/><circle cx="793.3" cy="244.7" r="52"/><circle cx="854" cy="408.4" r="52"/><circle cx="756.6" cy="561" r="52"/><circle cx="618.8" cy="682.5" r="52"/><circle cx="512" cy="828.4" r="52"/><circle cx="405.2" cy="682.5" r="52"/><circle cx="267.4" cy="561" r="52"/><circle cx="170" cy="408.4" r="52"/><circle cx="230.7" cy="244.7" r="52"/></g>
+  <g transform="translate(403.5 215.6) scale(4.5) translate(-32 -26)">
+    <path fill="#2c84de" d="M2 9a5 5 0 0 1 5-5h15.6a4 4 0 0 1 2.9 1.2L28.4 8H57a5 5 0 0 1 5 5v30a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5z"/>
+    <path fill="#68bdf8" d="M2 17a5 5 0 0 1 5-5h50a5 5 0 0 1 5 5v26a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5z"/>
+  </g>
+</svg>

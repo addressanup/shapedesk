@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Page not found · ShapeDesk</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#110d1e">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/site.css">
+  <style>
+    .lost {
+      min-height: 100svh;
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto minmax(260px, 1fr) auto;
+    }
+    .lost .hero-copy { display: grid; gap: 18px; justify-items: start; }
+    .lost .hero-copy p { max-width: 460px; color: rgba(244, 238, 248, 0.86); }
+  </style>
+</head>
+<body>
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="folder-back" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#3f9ced"/><stop offset="1" stop-color="#2a7fd6"/>
+      </linearGradient>
+      <linearGradient id="folder-front" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#86cdfc"/><stop offset="1" stop-color="#4aa6f1"/>
+      </linearGradient>
+      <symbol id="folder" viewBox="0 0 64 52">
+        <path fill="url(#folder-back)" d="M2 9a5 5 0 0 1 5-5h15.6a4 4 0 0 1 2.9 1.2L28.4 8H57a5 5 0 0 1 5 5v30a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5z"/>
+        <path fill="url(#folder-front)" d="M2 17a5 5 0 0 1 5-5h50a5 5 0 0 1 5 5v26a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5z"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <header class="menubar">
+    <nav class="menubar__left" aria-label="Site">
+      <a class="menubar__app" href="/">ShapeDesk</a>
+      <a class="menubar__item" href="/#install">Install</a>
+    </nav>
+  </header>
+
+  <main class="desktop lost">
+    <div class="hero-copy">
+      <h1>This page isn't<br>on the desktop.</h1>
+      <p>The link may be old or mistyped. The folders below spell it out anyway.</p>
+      <a class="button-download" href="/">Go to the home page</a>
+    </div>
+    <div class="stage" id="stage" aria-hidden="true"></div>
+    <div class="icons" id="icons" aria-hidden="true"></div>
+  </main>
+
+  <script type="module">
+    import { fit } from '/js/geometry.js';
+    import { textPoints } from '/js/text-shape.js';
+
+    const desktop = document.querySelector('.desktop');
+    const stage = document.getElementById('stage');
+    const layer = document.getElementById('icons');
+    const icons = Array.from({ length: 26 }, () => {
+      const el = document.createElement('div');
+      el.className = 'icon';
+      el.innerHTML = '<svg class="icon__art" viewBox="0 0 64 52"><use href="#folder"/></svg>';
+      layer.append(el);
+      return el;
+    });
+
+    function layout() {
+      const d = desktop.getBoundingClientRect();
+      const s = stage.getBoundingClientRect();
+      const icon = icons[0].firstElementChild.getBoundingClientRect().width - 4;
+      const cell = icons[0].getBoundingClientRect().width;
+      const rect = { x: s.left - d.left, y: s.top - d.top, width: s.width, height: s.height };
+      const points = fit(textPoints('404', icons.length, rect.width / rect.height), rect, 0.8);
+      icons.forEach((el, i) => {
+        const p = points[i];
+        el.style.transform = `translate3d(${p.x - cell / 2}px, ${p.y - 2 - icon * 0.40625}px, 0)`;
+      });
+    }
+    layout();
+    new ResizeObserver(layout).observe(stage);
+  </script>
+</body>
+</html>
