@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>ShapeDesk: arrange your Mac's desktop icons into shapes</title>
+  <meta name="description" content="ShapeDesk is a free macOS menu bar app that moves the real icons on your desktop into a heart, a star, a spiral, or any word you type. One click lines them back up.">
+  <link rel="canonical" href="https://shapedesk.space/">
+  <meta name="theme-color" content="#110d1e">
+  <meta name="color-scheme" content="dark">
+
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://shapedesk.space/">
+  <meta property="og:site_name" content="ShapeDesk">
+  <meta property="og:title" content="ShapeDesk: your desktop, in any shape">
+  <meta property="og:description" content="A free macOS menu bar app that arranges your real desktop icons into hearts, stars, spirals, and words.">
+  <meta property="og:image" content="https://shapedesk.space/img/og.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Blue folder icons arranged in a heart on a dusk-colored Mac desktop, next to the ShapeDesk menu bar panel">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
+  <link rel="preload" href="/fonts/gabarito.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/site.css">
+  <script type="module" src="/js/site.js"></script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "ShapeDesk",
+    "operatingSystem": "macOS 13 or later",
+    "applicationCategory": "UtilitiesApplication",
+    "description": "A menu bar app that arranges your real desktop icons into shapes or spells words with them.",
+    "softwareVersion": "1.0",
+    "downloadUrl": "https://github.com/addressanup/shapedesk/releases/latest/download/ShapeDesk.zip",
+    "url": "https://shapedesk.space/",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+</head>
+<body>
+  <!-- Shared folder artwork for every desktop icon. Not display:none, which
+       would stop the gradients from rendering through <use>. -->
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="folder-back" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#3f9ced"/>
+        <stop offset="1" stop-color="#2a7fd6"/>
+      </linearGradient>
+      <linearGradient id="folder-front" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#86cdfc"/>
+        <stop offset="1" stop-color="#4aa6f1"/>
+      </linearGradient>
+      <symbol id="folder" viewBox="0 0 64 52">
+        <path fill="url(#folder-back)" d="M2 9a5 5 0 0 1 5-5h15.6a4 4 0 0 1 2.9 1.2L28.4 8H57a5 5 0 0 1 5 5v30a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5z"/>
+        <path fill="url(#folder-front)" d="M2 17a5 5 0 0 1 5-5h50a5 5 0 0 1 5 5v26a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5z"/>
+        <path fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1" d="M3 17.5a4.5 4.5 0 0 1 4.5-4.5h49a4.5 4.5 0 0 1 4.5 4.5"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <header class="menubar">
+    <nav class="menubar__left" aria-label="Site">
+      <a class="menubar__app" href="#top">ShapeDesk</a>
+      <a class="menubar__item" href="#how">How it works</a>
+      <a class="menubar__item" href="#install">Install</a>
+      <a class="menubar__item menubar__item--wide" href="#faq">FAQ</a>
+      <a class="menubar__item menubar__item--wide" href="https://github.com/addressanup/shapedesk">GitHub</a>
+    </nav>
+    <div class="menubar__right">
+      <button class="menubar__status" id="panel-toggle" type="button"
+              aria-controls="panel" aria-expanded="true" aria-label="ShapeDesk controls">
+        <svg viewBox="0 0 16 16" aria-hidden="true">
+          <rect x="1.5" y="1.5" width="3.6" height="3.6" rx=".9" fill="currentColor"/>
+          <g fill="none" stroke="currentColor" stroke-width="1.1">
+            <rect x="6.2" y="2" width="3.6" height="3.6" rx=".9"/><rect x="10.9" y="2" width="3.6" height="3.6" rx=".9"/>
+            <rect x="1.5" y="6.7" width="3.6" height="3.6" rx=".9"/><rect x="6.2" y="6.7" width="3.6" height="3.6" rx=".9"/><rect x="10.9" y="6.7" width="3.6" height="3.6" rx=".9"/>
+            <rect x="1.5" y="11.4" width="3.6" height="3.6" rx=".9"/><rect x="6.2" y="11.4" width="3.6" height="3.6" rx=".9"/><rect x="10.9" y="11.4" width="3.6" height="3.6" rx=".9"/>
+          </g>
+        </svg>
+      </button>
+      <svg class="menubar__wifi" viewBox="0 0 18 14" aria-hidden="true">
+        <path fill="currentColor" d="M9 13.2a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM4.9 8.6l-1-1.1a7.3 7.3 0 0 1 10.2 0l-1 1.1a5.8 5.8 0 0 0-8.2 0zM2.1 5.7 1 4.6a11.3 11.3 0 0 1 16 0l-1.1 1.1a9.8 9.8 0 0 0-13.8 0z"/>
+      </svg>
+      <time class="menubar__clock" id="clock"></time>
+    </div>
+  </header>
+
+  <main>
+    <section class="desktop" id="top" aria-labelledby="hero-title">
+      <div class="wallpaper" aria-hidden="true">
+        <svg viewBox="0 0 1440 600" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="dune-a" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#ff9a5c" stop-opacity=".55"/>
+              <stop offset="1" stop-color="#b8405a" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="dune-b" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#d9547a" stop-opacity=".5"/>
+              <stop offset="1" stop-color="#3a1a40" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path fill="url(#dune-a)" d="M0 380C260 300 520 290 760 340s470 70 680-10v270H0z"/>
+          <path fill="url(#dune-b)" d="M0 470c300-90 620-70 900-10s400 40 540-20v160H0z"/>
+        </svg>
+      </div>
+
+      <div class="hero-copy">
+        <h1 id="hero-title">Your desktop,<br>in any shape.</h1>
+        <div class="hero-copy__aside">
+          <p>ShapeDesk is a free menu bar app that moves the real icons on your Mac's desktop into a heart, a star, a spiral, or any word you type. When you're done, one click lines them back up.</p>
+          <div class="cta-row">
+            <a class="button-download" href="https://github.com/addressanup/shapedesk/releases/latest/download/ShapeDesk.zip">
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M10 3v10m-4-4 4 4 4-4M4 16.5h12"/></svg>
+              Download for Mac
+            </a>
+            <a class="link-quiet" href="https://github.com/addressanup/shapedesk">View source on GitHub</a>
+          </div>
+          <p class="meta">v1.0 · macOS 13+ · Apple Silicon &amp; Intel</p>
+        </div>
+      </div>
+
+      <div class="stage" id="stage" aria-hidden="true"></div>
+      <div class="icons" id="icons" aria-hidden="true"></div>
+
+      <div class="panel" id="panel" data-open="true" role="region" aria-label="ShapeDesk controls">
+        <div class="panel__header">
+          <span class="panel__title">ShapeDesk</span>
+          <span class="panel__count" id="icon-count">40 icons</span>
+          <button class="panel__icon-button" id="refresh" type="button" aria-label="Re-count desktop icons" title="Re-count desktop icons">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" d="M13 8a5 5 0 1 1-1.6-3.7"/><path fill="currentColor" d="M13.6 1.8v4.1H9.5z"/></svg>
+          </button>
+        </div>
+
+        <div class="panel__shapes">
+          <button class="shape-button" type="button" data-shape="heart">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 20.6s-7.6-4.6-9.5-9.3C1.1 7.9 3.2 4.3 6.8 4.3c2.1 0 3.6 1.1 5.2 3 1.6-1.9 3.1-3 5.2-3 3.6 0 5.7 3.6 4.3 7-1.9 4.7-9.5 9.3-9.5 9.3z"/></svg>
+            <span>Heart</span>
+          </button>
+          <button class="shape-button" type="button" data-shape="circle">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+            <span>Circle</span>
+          </button>
+          <button class="shape-button" type="button" data-shape="star">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="m12 2.8 2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z"/></svg>
+            <span>Star</span>
+          </button>
+          <button class="shape-button" type="button" data-shape="spiral">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="2.6"/><path d="M9.3 4.1C11.7 3 15.5 3 18 4.6c-3.5-.2-6.4 1.4-7.6 4.6M14.7 19.9c-2.4 1.1-6.2 1.1-8.7-.5 3.5.2 6.4-1.4 7.6-4.6"/></g></svg>
+            <span>Spiral</span>
+          </button>
+          <button class="shape-button" type="button" data-shape="wave">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3 8.2c1.5 0 1.5-1.6 3-1.6s1.5 1.6 3 1.6 1.5-1.6 3-1.6 1.5 1.6 3 1.6 1.5-1.6 3-1.6 1.5 1.6 3 1.6"/><path d="M3 12.8c1.5 0 1.5-1.6 3-1.6s1.5 1.6 3 1.6 1.5-1.6 3-1.6 1.5 1.6 3 1.6 1.5-1.6 3-1.6 1.5 1.6 3 1.6"/><path d="M3 17.4c1.5 0 1.5-1.6 3-1.6s1.5 1.6 3 1.6 1.5-1.6 3-1.6 1.5 1.6 3 1.6 1.5-1.6 3-1.6 1.5 1.6 3 1.6"/></g></svg>
+            <span>Wave</span>
+          </button>
+        </div>
+
+        <form class="panel__spell" id="spell-form">
+          <label class="visually-hidden" for="spell-input">Word to spell</label>
+          <input id="spell-input" type="text" value="HELLO" maxlength="14" autocomplete="off" spellcheck="false" placeholder="Spell something…">
+          <button class="panel__button" type="submit">Spell it</button>
+        </form>
+
+        <div class="panel__options">
+          <label class="panel__caption" for="size">Size</label>
+          <input id="size" type="range" min="0.4" max="0.95" step="0.01" value="0.8">
+          <label class="panel__check"><input id="animate" type="checkbox" checked> Animate</label>
+        </div>
+
+        <p class="panel__status" id="status" role="status" aria-live="polite">Click a shape to arrange your desktop.</p>
+
+        <div class="panel__footer">
+          <button class="panel__button" id="reset" type="button" title="Re-arrange icons into Finder's plain sorted grid">Reset to grid</button>
+          <button class="panel__button" id="close" type="button">Close</button>
+        </div>
+      </div>
+
+      <p class="desktop-note">These <span id="note-count">40</span> folders are pretend. On your Mac, ShapeDesk moves your real ones.<span class="desktop-note__drag"> Drag a few around, then pick a shape.</span></p>
+    </section>
+
+    <section class="section video" aria-labelledby="video-title">
+      <div class="section__head">
+        <h2 id="video-title">Watch it on a real desktop</h2>
+        <p>Forty real folders on a real Mac go from a heart to the word HELLO and back into a tidy grid.</p>
+      </div>
+      <figure class="video__frame">
+        <video controls playsinline preload="none" poster="/media/demo-poster.jpg" width="1280" height="720">
+          <source src="/media/demo.mp4" type="video/mp4">
+          <a href="/media/demo.mp4">Download the demo video (MP4, 3.7 MB)</a>
+        </video>
+        <figcaption class="meta">0:29 · with sound</figcaption>
+      </figure>
+    </section>
+
+    <section class="section how" id="how" aria-labelledby="how-title">
+      <div class="section__head">
+        <h2 id="how-title">How it moves your icons</h2>
+        <p>ShapeDesk works out a spot for every icon on your desktop, then asks Finder to move it there.</p>
+      </div>
+      <div class="how__grid">
+        <article class="how__item">
+          <figure class="figure">
+            <svg class="figure__heart" id="figure-heart" viewBox="0 0 320 240" role="img" aria-label="40 dots spaced evenly around a heart curve"></svg>
+            <figcaption class="meta">40 points on x = 16 sin³t</figcaption>
+          </figure>
+          <h3>Shapes are curves</h3>
+          <p>Each shape is a math curve, like the classic heart. ShapeDesk walks along it, drops one point per icon at even spacing, and fits the result to your screen, clear of the menu bar and Dock.</p>
+        </article>
+        <article class="how__item">
+          <figure class="figure">
+            <canvas class="figure__word" id="figure-word" width="640" height="480" role="img" aria-label="The letters H and I thinned to single-pixel lines, with points on their ends and along their strokes"></canvas>
+            <figcaption class="meta"><span class="dot dot--ember"></span>ends and corners first <span class="dot dot--folder"></span>then the rest</figcaption>
+          </figure>
+          <h3>Words are strokes</h3>
+          <p>Words are drawn in a thin font, then thinned to one-pixel lines. Icons go on the ends and corners of each stroke first, because that's what makes a letter readable, then fill the gaps evenly.</p>
+        </article>
+        <article class="how__item">
+          <figure class="figure figure--code">
+<pre><code><span class="tok-key">tell</span> application <span class="tok-str">"Finder"</span>
+  <span class="tok-key">ignoring</span> application responses
+    <span class="tok-key">set</span> desktop position <span class="tok-dim">¬</span>
+      <span class="tok-key">of</span> item <span class="tok-str">"Invoices"</span> <span class="tok-dim">¬</span>
+      <span class="tok-key">to</span> {812, 344}
+    <span class="tok-dim">… one line per icon</span>
+  <span class="tok-key">end ignoring</span>
+  <span class="tok-key">count</span> items <span class="tok-key">of</span> desktop
+<span class="tok-key">end tell</span></code></pre>
+            <figcaption class="meta">One of 14 frames</figcaption>
+          </figure>
+          <h3>Finder does the moving</h3>
+          <p>ShapeDesk asks Finder to move each icon, the same way an AppleScript would. It sends 14 eased steps without waiting on each reply, so 40 icons glide into place in about a second.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section install" id="install" aria-labelledby="install-title">
+      <div class="section__head">
+        <h2 id="install-title">Install it in about a minute</h2>
+        <p>ShapeDesk isn't notarized by Apple yet, so macOS asks you to confirm it the first time you open it. You only do this once.</p>
+      </div>
+
+      <ol class="steps">
+        <li class="step">
+          <div class="step__text">
+            <h3>Download and unzip</h3>
+            <p><a href="https://github.com/addressanup/shapedesk/releases/latest/download/ShapeDesk.zip">Download ShapeDesk.zip</a>, open it from your Downloads folder, then drag ShapeDesk into Applications.</p>
+          </div>
+        </li>
+
+        <li class="step">
+          <div class="step__text">
+            <h3>Open it once</h3>
+            <p>Double-click ShapeDesk. macOS says it can't verify the app. Click <strong>Done</strong>, not Move to Trash.</p>
+            <p class="step__aside">On macOS 13 or 14, Control-click ShapeDesk instead, choose Open, then click Open. You can skip to step 4.</p>
+          </div>
+          <div class="mock mock--alert" aria-hidden="true">
+            <div class="mock__appicon"></div>
+            <p class="mock__title">“ShapeDesk” Not Opened</p>
+            <p class="mock__body">Apple could not verify “ShapeDesk” is free of malware that may harm your Mac or compromise your privacy.</p>
+            <div class="mock__buttons mock__buttons--stack">
+              <span class="mock__btn mock__btn--focus">Done</span>
+              <span class="mock__btn">Move to Trash</span>
+            </div>
+          </div>
+        </li>
+
+        <li class="step">
+          <div class="step__text">
+            <h3>Allow it in System Settings</h3>
+            <p>Open System Settings, go to <strong>Privacy &amp; Security</strong>, and scroll down to Security. Click <strong>Open Anyway</strong> next to the ShapeDesk message, confirm with Open Anyway once more, and enter your password.</p>
+            <p class="step__aside">ShapeDesk opens and a grid icon appears in your menu bar.</p>
+          </div>
+          <div class="mock mock--settings" aria-hidden="true">
+            <p class="mock__section">Security</p>
+            <div class="mock__row">
+              <span>“ShapeDesk” was blocked to protect your Mac.</span>
+              <span class="mock__btn mock__btn--focus">Open Anyway</span>
+            </div>
+          </div>
+        </li>
+
+        <li class="step">
+          <div class="step__text">
+            <h3>Let it move Finder icons</h3>
+            <p>The first time you pick a shape, macOS asks whether ShapeDesk can control Finder. Click <strong>Allow</strong>.</p>
+            <p class="step__aside">Missed it? Turn it on in System Settings → Privacy &amp; Security → Automation → ShapeDesk → Finder.</p>
+          </div>
+          <div class="mock mock--alert" aria-hidden="true">
+            <div class="mock__appicon"></div>
+            <p class="mock__title">“ShapeDesk” wants access to control “Finder”.</p>
+            <p class="mock__body">ShapeDesk needs to control Finder to arrange your desktop icons into shapes.</p>
+            <div class="mock__buttons">
+              <span class="mock__btn">Don’t Allow</span>
+              <span class="mock__btn mock__btn--focus">Allow</span>
+            </div>
+          </div>
+        </li>
+
+        <li class="step">
+          <div class="step__text">
+            <h3>Turn off desktop sorting</h3>
+            <p>Right-click the desktop, choose <strong>Sort By → None</strong>, and make sure <strong>Use Stacks</strong> is off. If sorting is on, Finder snaps your icons straight back into a grid.</p>
+          </div>
+          <div class="mock mock--menu" aria-hidden="true">
+            <ul class="mock__menu">
+              <li><span class="mock__check"></span>New Folder</li>
+              <li><span class="mock__check"></span>Get Info</li>
+              <li class="mock__sep"></li>
+              <li><span class="mock__check"></span>Use Stacks</li>
+              <li class="is-open"><span class="mock__check"></span>Sort By<span class="mock__chev">›</span></li>
+              <li><span class="mock__check"></span>Clean Up</li>
+            </ul>
+            <ul class="mock__menu mock__menu--sub">
+              <li class="is-picked"><span class="mock__check">✓</span>None</li>
+              <li><span class="mock__check"></span>Snap to Grid</li>
+              <li class="mock__sep"></li>
+              <li><span class="mock__check"></span>Name</li>
+              <li><span class="mock__check"></span>Kind</li>
+              <li><span class="mock__check"></span>Date Added</li>
+            </ul>
+          </div>
+        </li>
+      </ol>
+
+      <div class="extras">
+        <details class="extra">
+          <summary>Prefer Terminal?</summary>
+          <p>Run this instead of steps 2 and 3. It clears the download flag, so macOS opens ShapeDesk without asking. Only do this for apps you trust.</p>
+          <div class="command">
+            <code>xattr -dr com.apple.quarantine /Applications/ShapeDesk.app</code>
+            <button class="command__copy" type="button" data-copy="xattr -dr com.apple.quarantine /Applications/ShapeDesk.app">Copy</button>
+          </div>
+        </details>
+        <details class="extra">
+          <summary>Build it from source</summary>
+          <p>You need Xcode or the Swift command line tools. Without Xcode 26 or later, the app builds without its icon.</p>
+          <div class="command">
+            <code>git clone https://github.com/addressanup/shapedesk.git &amp;&amp; cd shapedesk &amp;&amp; ./bundle.sh &amp;&amp; open build/ShapeDesk.app</code>
+            <button class="command__copy" type="button" data-copy="git clone https://github.com/addressanup/shapedesk.git &amp;&amp; cd shapedesk &amp;&amp; ./bundle.sh &amp;&amp; open build/ShapeDesk.app">Copy</button>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section class="section faq" id="faq" aria-labelledby="faq-title">
+      <div class="section__head">
+        <h2 id="faq-title">Questions</h2>
+      </div>
+      <div class="faq__list">
+        <details>
+          <summary>Will I get my old layout back?</summary>
+          <p>Reset to grid lines every icon up in a tidy grid, sorted by name, the way Finder arranges a fresh desktop. ShapeDesk doesn't save the exact spots your icons were in before, so take a screenshot first if your layout matters to you.</p>
+        </details>
+        <details>
+          <summary>Why do my icons jump back right away?</summary>
+          <p>Finder's desktop sorting is on. Right-click the desktop, choose Sort By → None, and turn off Use Stacks.</p>
+        </details>
+        <details>
+          <summary>How many icons do I need?</summary>
+          <p>Shapes work with any number. Words read best with about 7 icons per letter, so 40 icons spell a five-letter word well. If icons crowd each other, raise the Size slider.</p>
+        </details>
+        <details>
+          <summary>What can ShapeDesk see on my Mac?</summary>
+          <p>Only the names and positions of the items on your desktop, which it reads through Finder. It never opens your files, and it has no network code, so nothing leaves your Mac.</p>
+        </details>
+        <details>
+          <summary>Does it work with iCloud Desktop &amp; Documents?</summary>
+          <p>Yes. Items that are still syncing may land outside the shape. Pick the shape again once they've finished.</p>
+        </details>
+        <details>
+          <summary>Which Macs does it run on?</summary>
+          <p>Any Mac with macOS 13 Ventura or later, on Apple Silicon or Intel.</p>
+        </details>
+        <details>
+          <summary>Why isn't it notarized?</summary>
+          <p>Notarization needs a paid Apple developer account. Until then, the full source is <a href="https://github.com/addressanup/shapedesk">on GitHub</a>, so you can read it or build it yourself.</p>
+        </details>
+        <details>
+          <summary>How do I quit or uninstall it?</summary>
+          <p>Click the grid icon in the menu bar and choose Quit. To uninstall, drag ShapeDesk from Applications to the Trash.</p>
+        </details>
+      </div>
+    </section>
+
+    <section class="section closing" aria-labelledby="closing-title">
+      <img class="closing__icon" src="/img/app-icon.webp" width="112" height="112" alt="" loading="lazy">
+      <h2 id="closing-title">Give your desktop a shape.</h2>
+      <a class="button-download" href="https://github.com/addressanup/shapedesk/releases/latest/download/ShapeDesk.zip">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M10 3v10m-4-4 4 4 4-4M4 16.5h12"/></svg>
+        Download for Mac
+      </a>
+      <p class="meta">Free · Version 1.0 · macOS 13 or later · Apple Silicon and Intel</p>
+      <p class="closing__support">If ShapeDesk makes you smile, you can <a class="link-quiet" href="https://buymeacoffee.com/anup.tbc">buy me a coffee</a>.</p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <nav class="footer__links" aria-label="Project">
+      <a href="https://github.com/addressanup/shapedesk">Source code</a>
+      <a href="https://github.com/addressanup/shapedesk/releases">All releases</a>
+      <a href="https://github.com/addressanup/shapedesk/issues/new">Report a problem</a>
+      <a href="https://buymeacoffee.com/anup.tbc">Buy me a coffee</a>
+    </nav>
+    <p>ShapeDesk is not affiliated with Apple. macOS and Finder are trademarks of Apple Inc.</p>
+  </footer>
+</body>
+</html>
