@@ -41,8 +41,12 @@ A grid icon appears in your menu bar. Click it, pick a shape, done.
    read with AppleScript (`desktop position of every item of desktop`), and
    positions are written back in a single batched `osascript` call per
    animation frame (14 smoothstep-eased frames over ~0.7 s).
-3. **UI** (`ShapeDeskApp.swift`): a SwiftUI `MenuBarExtra` window with the
-   shape grid, text field, size slider, and status line.
+3. **UI** (`ShapeDeskApp.swift`, `MenuBarPanel.swift`): a menu bar icon
+   with a drop-down panel holding the shape grid, text field, size slider,
+   and status line. The app positions the panel itself each time it opens,
+   just under the icon (or under the click if macOS reports the icon
+   somewhere odd) and always inside the screen. SwiftUI's `MenuBarExtra`
+   trusted the reported icon position and could open off-screen.
 
 If icons end up tighter than ~64 px apart (lots of icons, small screen),
 the status line warns that they may overlap — raise the **Size** slider.

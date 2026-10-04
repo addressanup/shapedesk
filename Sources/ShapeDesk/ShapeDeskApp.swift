@@ -2,17 +2,27 @@ import SwiftUI
 
 @main
 struct ShapeDeskApp: App {
-    @StateObject private var vm = ViewModel()
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
-        MenuBarExtra {
-            ContentView()
-                .environmentObject(vm)
-                .onAppear { vm.refresh() }
-        } label: {
-            Image(systemName: "square.grid.3x3.topleft.filled")
+        // The UI lives in MenuBarPanel. An App needs a scene, so this one is an
+        // empty Settings scene with its menu command removed.
+        Settings { EmptyView() }
+            .commands { CommandGroup(replacing: .appSettings) {} }
+    }
+}
+
+@MainActor
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    private let vm = ViewModel()
+    private var menuBar: MenuBarPanel?
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        menuBar = MenuBarPanel(symbolName: "square.grid.3x3.topleft.filled",
+                               label: "ShapeDesk",
+                               onOpen: { [vm] in vm.refresh() }) {
+            ContentView().environmentObject(vm)
         }
-        .menuBarExtraStyle(.window)
     }
 }
 
