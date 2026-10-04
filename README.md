@@ -32,8 +32,11 @@ A grid icon appears in your menu bar. Click it, pick a shape, done.
    (e.g. the classic `16 sin³t` heart), resampled by arc length into exactly
    one point per desktop icon, then scaled and centered on your screen's
    usable area (menu bar and Dock excluded). The text mode
-   (`TextShape.swift`) renders the word into an offscreen bitmap and picks
-   well-spread points inside the glyphs.
+   (`TextShape.swift`) draws the word in capitals with a thin font, thins
+   the strokes to one-pixel centerlines, puts icons on stroke ends and
+   corners first, then spaces the rest evenly along the strokes. Words read
+   best with about 7 or more icons per letter; the status line says so when
+   a word is too long for your icon count.
 2. **Finder bridge** (`FinderBridge.swift`): icon names and positions are
    read with AppleScript (`desktop position of every item of desktop`), and
    positions are written back in a single batched `osascript` call per

@@ -56,10 +56,16 @@ final class ViewModel: ObservableObject {
             let names = try FinderBridge.desktopIconNames()
             return (names, "")
         } finish: { [weak self] (names: [String], _: String) in
-            self?.layout(names: names, label: "\"\(text)\"") { n in
-                let raw = TextShape.points(for: text, count: n)
-                return ShapeMath.fit(raw, into: self?.desktopRect ?? .zero,
-                                     fill: self?.fill ?? 0.8)
+            let letters = text.filter { !$0.isWhitespace }.count
+            let perLetter = names.count / max(letters, 1)
+            let hint = perLetter < 7
+                ? "That's only about \(perLetter) icons per letter, so a shorter word will read better."
+                : nil
+            self?.layout(names: names, label: "\"\(text)\"", hint: hint) { n in
+                let rect = self?.desktopRect ?? .zero
+                let raw = TextShape.points(for: text, count: n,
+                                           aspect: rect.width / max(rect.height, 1))
+                return ShapeMath.fit(raw, into: rect, fill: self?.fill ?? 0.8)
             }
         }
     }
@@ -82,7 +88,8 @@ final class ViewModel: ObservableObject {
 
     /// Shared tail of apply/applyText: build points, warn on tight spacing,
     /// then move the icons.
-    private func layout(names: [String], label: String, makePoints: (Int) -> [CGPoint]) {
+    private func layout(names: [String], label: String, hint: String? = nil,
+                        makePoints: (Int) -> [CGPoint]) {
         guard !names.isEmpty else {
             status = "No desktop icons found. (Desktop & Documents Folders in iCloud can hide them.)"
             return
@@ -96,6 +103,9 @@ final class ViewModel: ObservableObject {
         let spacing = ShapeMath.medianSpacing(points)
         let targets = zip(names, points).map { ($0, $1) }
         move(targets: targets, label: label) { [weak self] in
+            if let hint {
+                self?.status += " " + hint
+            }
             if spacing < 64 {
                 self?.status += " Some icons may overlap — try a bigger Size."
             }
