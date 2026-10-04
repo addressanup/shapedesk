@@ -110,8 +110,38 @@ function wireCopyButtons() {
   });
 }
 
+/** After a download link is clicked, a banner offers the next step and a coffee. */
+function wireDownloadNotice() {
+  const notice = document.getElementById('download-notice');
+  if (!notice) return;
+  let hideTimer;
+
+  const show = () => {
+    clearTimeout(hideTimer);
+    notice.hidden = false;
+    // Two frames so the closed state is painted before the slide-in starts.
+    requestAnimationFrame(() => requestAnimationFrame(() => { notice.dataset.open = 'true'; }));
+  };
+  const hide = () => {
+    if (notice.dataset.open !== 'true') return;
+    notice.dataset.open = 'false';
+    hideTimer = setTimeout(() => { notice.hidden = true; }, 240);
+  };
+
+  document.querySelectorAll('a[href$="/ShapeDesk.zip"]').forEach((link) => {
+    // The page stays put while the zip downloads, so wait a beat for the browser's own download UI.
+    link.addEventListener('click', () => setTimeout(show, 600));
+  });
+  notice.querySelector('.notice__close').addEventListener('click', hide);
+  notice.querySelector('.button-coffee').addEventListener('click', hide);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') hide();
+  });
+}
+
 startClock();
 initDesktop();
 drawHeartFigure();
 drawWordFigure();
 wireCopyButtons();
+wireDownloadNotice();
