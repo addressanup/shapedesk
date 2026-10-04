@@ -39,8 +39,11 @@ A grid icon appears in your menu bar. Click it, pick a shape, done.
    a word is too long for your icon count.
 2. **Finder bridge** (`FinderBridge.swift`): icon names and positions are
    read with AppleScript (`desktop position of every item of desktop`), and
-   positions are written back in a single batched `osascript` call per
-   animation frame (14 smoothstep-eased frames over ~0.7 s).
+   positions are written back in one `osascript` call per arrangement:
+   14 smoothstep-eased frames, each frame's moves sent without waiting for
+   Finder's replies, then one quick query so Finder catches up before the
+   next frame. That takes about 1.2 s for 40 icons; waiting for a reply to
+   every move took about 10 s.
 3. **UI** (`ShapeDeskApp.swift`, `MenuBarPanel.swift`): a menu bar icon
    with a drop-down panel holding the shape grid, text field, size slider,
    and status line. The app positions the panel itself each time it opens,

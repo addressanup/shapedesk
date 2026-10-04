@@ -27,19 +27,23 @@ enum FinderBridge {
 
     // MARK: - osascript runner
 
+    /// Runs an AppleScript, passed on stdin so large animation scripts can't
+    /// hit the argument-size limit.
     @discardableResult
     private static func run(_ lines: [String]) throws -> (out: String, err: String) {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
-        var args: [String] = []
-        for line in lines { args += ["-e", line] }
-        process.arguments = args
+        process.arguments = ["-"]
 
-        let outPipe = Pipe(), errPipe = Pipe()
+        let inPipe = Pipe(), outPipe = Pipe(), errPipe = Pipe()
+        process.standardInput = inPipe
         process.standardOutput = outPipe
         process.standardError = errPipe
 
         try process.run()
+        let source = lines.joined(separator: "\n") + "\n"
+        inPipe.fileHandleForWriting.write(source.data(using: .utf8)!)
+        try? inPipe.fileHandleForWriting.close()
         let outData = outPipe.fileHandleForReading.readDataToEndOfFile()
         let errData = errPipe.fileHandleForReading.readDataToEndOfFile()
         process.waitUntilExit()
@@ -108,18 +112,32 @@ enum FinderBridge {
         return positionProperty!
     }
 
-    /// Moves every icon in one AppleScript call. Individual failures are
-    /// swallowed (per-item try) so one stubborn file doesn't abort the rest.
+    /// Moves every icon in one AppleScript call.
     static func setPositions(_ items: [(name: String, point: CGPoint)], property: String) throws {
         guard !items.isEmpty else { return }
+        try run(moveScript(frames: [items], property: property))
+    }
+
+    /// One Finder script that applies each frame of moves in order.
+    ///
+    /// Waiting for Finder's reply to every single move costs ~18 ms, which
+    /// made a 40-icon frame take ~0.75 s. So each frame's moves are sent
+    /// without waiting (a move that fails is simply skipped), and one cheap
+    /// query at the end of the frame waits until Finder has applied them all.
+    /// That keeps frames in order and evenly paced, ~90 ms for 40 icons.
+    private static func moveScript(frames: [[(name: String, point: CGPoint)]],
+                                   property: String) -> [String] {
         var lines = ["tell application \"Finder\""]
-        for item in items {
-            lines.append("try")
-            lines.append("set \(property) of item \"\(escape(item.name))\" of desktop to {\(Int(item.point.x)), \(Int(item.point.y))}")
-            lines.append("end try")
+        for frame in frames {
+            lines.append("ignoring application responses")
+            for item in frame {
+                lines.append("set \(property) of item \"\(escape(item.name))\" of desktop to {\(Int(item.point.x)), \(Int(item.point.y))}")
+            }
+            lines.append("end ignoring")
+            lines.append("count items of desktop")
         }
         lines.append("end tell")
-        try run(lines)
+        return lines
     }
 
     /// Full layout pass: reads icons, moves each to its target point, with an
@@ -140,23 +158,20 @@ enum FinderBridge {
             return
         }
 
-        let frames = 14
-        for f in 1...frames {
-            let t = Double(f) / Double(frames)
+        let frameCount = 14
+        let frames: [[(name: String, point: CGPoint)]] = (1...frameCount).map { f in
+            let t = Double(f) / Double(frameCount)
             let eased = t * t * (3 - 2 * t)   // smoothstep
-            var step: [(String, CGPoint)] = []
-            step.reserveCapacity(targets.count)
-            for i in targets.indices {
+            return targets.indices.map { i in
                 let from = current[i], to = targets[i].point
-                step.append((targets[i].name, CGPoint(
+                return (targets[i].name, CGPoint(
                     x: from.x + (to.x - from.x) * eased,
                     y: from.y + (to.y - from.y) * eased
-                )))
+                ))
             }
-            progress("Animating… \(f)/\(frames)")
-            try setPositions(step, property: property)
-            Thread.sleep(forTimeInterval: 0.05)
         }
+        progress("Animating…")
+        try run(moveScript(frames: frames, property: property))
     }
 
     /// "Clean Up By Name" replacement: sorted grid, right-aligned columns,
