@@ -65,6 +65,11 @@
         <path fill="url(#folder-front)" d="M2 17a5 5 0 0 1 5-5h50a5 5 0 0 1 5 5v26a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5z"/>
         <path fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1" d="M3 17.5a4.5 4.5 0 0 1 4.5-4.5h49a4.5 4.5 0 0 1 4.5 4.5"/>
       </symbol>
+      <symbol id="cup" viewBox="0 0 16 16">
+        <path fill="currentColor" d="M2.2 6.2h9.2v3.9a4 4 0 0 1-4 4H6.2a4 4 0 0 1-4-4z"/>
+        <path fill="none" stroke="currentColor" stroke-width="1.4" d="M11.4 7.4h.9a1.9 1.9 0 0 1 0 3.8h-1.1"/>
+        <path fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" d="M5.1 1.6c-.7.8.7 1.4 0 2.6M8.3 1.6c-.7.8.7 1.4 0 2.6"/>
+      </symbol>
     </defs>
   </svg>
 
@@ -77,6 +82,10 @@
       <a class="menubar__item menubar__item--wide" href="https://github.com/addressanup/shapedesk">GitHub</a>
     </nav>
     <div class="menubar__right">
+      <a class="menubar__coffee" href="https://buymeacoffee.com/anup.tbc">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#cup"/></svg>
+        <span class="menubar__coffee-label">Buy me a coffee</span>
+      </a>
       <button class="menubar__status" id="panel-toggle" type="button"
               aria-controls="panel" aria-expanded="true" aria-label="ShapeDesk controls">
         <svg viewBox="0 0 16 16" aria-hidden="true">
@@ -94,6 +103,24 @@
       <time class="menubar__clock" id="clock"></time>
     </div>
   </header>
+
+  <div class="notice" id="download-notice" role="status" hidden>
+    <button class="notice__close" type="button" aria-label="Dismiss">
+      <svg viewBox="0 0 12 12" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" d="m3.5 3.5 5 5m0-5-5 5"/></svg>
+    </button>
+    <img class="notice__icon" src="/img/app-icon.webp" width="40" height="40" alt="">
+    <div class="notice__body">
+      <p class="notice__title">ShapeDesk.zip is downloading</p>
+      <p>Thanks for trying ShapeDesk. It's free, and a coffee keeps it going.</p>
+      <div class="notice__actions">
+        <a class="button-coffee button-coffee--small" href="https://buymeacoffee.com/anup.tbc" target="_blank" rel="noopener">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#cup"/></svg>
+          Buy me a coffee
+        </a>
+        <a class="notice__link" href="#install">How to open it</a>
+      </div>
+    </div>
+  </div>
 
   <main>
     <section class="desktop" id="top" aria-labelledby="hero-title">
@@ -399,7 +426,13 @@
         Download for Mac
       </a>
       <p class="meta">Free · Version 1.0 · macOS 13 or later · Apple Silicon and Intel</p>
-      <p class="closing__support">If ShapeDesk makes you smile, you can <a class="link-quiet" href="https://buymeacoffee.com/anup.tbc">buy me a coffee</a>.</p>
+      <div class="closing__support">
+        <p>ShapeDesk is free. If it makes you smile, a coffee keeps it going.</p>
+        <a class="button-coffee" href="https://buymeacoffee.com/anup.tbc">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#cup"/></svg>
+          Buy me a coffee
+        </a>
+      </div>
     </section>
   </main>
 
