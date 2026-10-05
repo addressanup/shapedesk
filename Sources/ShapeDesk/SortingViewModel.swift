@@ -51,7 +51,23 @@ final class SortingViewModel: ObservableObject {
     var accountTitle: String {
         if entitlement?.accessType == "owner" { return "Owner access" }
         if entitlement?.active == true { return "Pro active" }
+        switch entitlement?.subscriptionStatus {
+        case "past_due", "unpaid": return "Payment needed"
+        case "canceled", "incomplete_expired": return "Subscription ended"
+        case "paused": return "Subscription paused"
+        default: break
+        }
         return hasLicense ? "Your subscription" : "Get ShapeDesk Pro"
+    }
+    private var accountMessage: String {
+        guard let entitlement else { return ProError.inactive.localizedDescription }
+        if entitlement.active { return "ShapeDesk Pro is active on this Mac." }
+        switch entitlement.subscriptionStatus {
+        case "past_due", "unpaid": return "Update your payment method in Manage billing, then refresh to restore AI Sort. Undo is always available."
+        case "canceled", "incomplete_expired": return "This subscription has ended. Manage billing shows your invoices. To subscribe again, deactivate this Mac and start a new checkout. Your undo history is kept."
+        case "paused": return "Your subscription is paused. Open Manage billing to review it. Undo is always available."
+        default: return "AI access is inactive. Open Manage billing or refresh to check your subscription. Undo is always available."
+        }
     }
     private var deviceID: String {
         let defaults = UserDefaults.standard
@@ -194,7 +210,7 @@ final class SortingViewModel: ObservableObject {
                 entitlement = usage
                 hasLicense = true
                 await clearPendingPurchase()
-                settingsMessage = "Pro is ready. Your recovery key is available below for another Mac."
+                settingsMessage = usage.active ? "Pro is ready. Your recovery key is available below for another Mac." : accountMessage
             } catch {
                 settingsMessage = error.localizedDescription
                 if error as? ProError == .checkoutExpired { await clearPendingPurchase() }
@@ -255,7 +271,7 @@ final class SortingViewModel: ObservableObject {
                 entitlement = usage
                 hasLicense = true
                 licenseDraft = ""
-                settingsMessage = "ShapeDesk Pro is active on this Mac."
+                settingsMessage = accountMessage
                 showSettings = false
             } catch { settingsMessage = error.localizedDescription }
             finishLoading()
@@ -364,7 +380,7 @@ final class SortingViewModel: ObservableObject {
         }
         do {
             entitlement = try await client.entitlement(credentials)
-            settingsMessage = entitlement?.active == true ? "ShapeDesk Pro is active on this Mac." : ProError.inactive.localizedDescription
+            settingsMessage = accountMessage
         } catch {
             entitlement = nil
             settingsMessage = error.localizedDescription

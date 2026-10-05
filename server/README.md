@@ -129,6 +129,39 @@ old signatures, strict confidence, filesystem locks, collisions, journals and un
 Real billing tests must use Stripe test mode and the staging database. A local
 mock is not evidence of a completed Stripe checkout or live hosted Jev call.
 
+Verified on 2026-10-05; initial hosted deployment commit `e77b498`:
+
+- Production deployed to `https://api.shapedesk.space`; health and plans return
+  200. Checkout is OFF. Unknown credentials and unauthenticated AI calls are denied.
+- A real Stripe sandbox checkout completed for $5 USD, with a signed webhook
+  provisioning access and the browser link activating the test app. The Stripe
+  portal was created successfully. Canceling that test subscription delivered a
+  signed event and revoked access; no live charge was made.
+- Installed universal app 1.1 on the Mac, activated metered hosted owner access,
+  and invoked both file and folder selections through Finder's native Service.
+- Production Jev classified the fixture as Screenshots. An in-use file was kept.
+  A shallow folder pass scanned one visible file, moved it to a collision suffix,
+  preserved the existing/hidden/nested files, and undo restored all four original
+  file names and byte hashes. Two AI checks were used; undo used none.
+- 54 Swift tests and 37 Node/Postgres tests passed; production npm audit reports
+  zero vulnerabilities. Universal archive signature verification passed, and the
+  app contains neither vendor/server secrets nor the owner-preview HTTP factory.
+- The old loopback LaunchAgent is stopped. Local undo journals are preserved.
+
+Archive: `dist/ShapeDesk.zip`, SHA-256
+`99a3b3ae9534b1747c17afb1bc7934697480940519cfc76f0937f0214e6aefa8`.
+The app uses an ad-hoc signature; Developer ID signing and notarization are still
+required for normal public distribution. No new GitHub release was published.
+
+To enable real purchases later: put a full live Stripe secret in `server/.env`,
+run `node server/scripts/configure-stripe.mjs live https://api.shapedesk.space`,
+then `node server/scripts/prepare-host.mjs live` and deploy the verified server.
+This preserves the existing production identity hash, owner grant and quota.
+Provisioning keeps live checkout OFF by default. Verify the live merchant/portal/
+webhook configuration, set `CHECKOUT_ENABLED="true"` in the private
+`server/.env.live.local`, prepare the host again and redeploy to enable purchases.
+The usable temporary **test** credential must be replaced by **2026-12-03**.
+
 The old `owner-preview.sh` is a development-only fallback, never a customer release.
 Once the hosted app is installed, stop its old helper with
 `launchctl bootout gui/$(id -u)/com.shapedesk.owner-preview` and remove that LaunchAgent

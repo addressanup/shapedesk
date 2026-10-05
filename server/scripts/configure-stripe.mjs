@@ -64,7 +64,7 @@ try {
     IDENTITY_HASH_KEY: prior.IDENTITY_HASH_KEY ?? randomBytes(32).toString('hex'),
     STRIPE_SECRET_KEY: key, STRIPE_PRICE_ID: price.id, STRIPE_WEBHOOK_SECRET: webhookSecret,
     STRIPE_PORTAL_CONFIGURATION_ID: portal.id, STRIPE_MODE: mode, SERVICE_ORIGIN: origin,
-    MONTHLY_CHECK_LIMIT: '1000', DEVICE_LIMIT: '3', CHECKOUT_ENABLED: 'true',
+    MONTHLY_CHECK_LIMIT: '1000', DEVICE_LIMIT: '3', CHECKOUT_ENABLED: prior.CHECKOUT_ENABLED ?? String(mode === 'test'),
     STRIPE_AUTOMATIC_TAX: String(automaticTax) };
   writeFileSync(output, Object.entries(result).map(([k,v]) => `${k}=${JSON.stringify(v)}`).join('\n')+'\n', { mode: 0o600 });
   console.log(JSON.stringify({ mode, productID: product.id, priceID: price.id, portalID: portal.id,

@@ -193,7 +193,7 @@ struct ProAccountView: View {
             } else if model.hasLicense {
                 HStack {
                     Label(model.accountTitle, systemImage: model.entitlement?.active == true ? "checkmark.circle.fill" : "person.crop.circle")
-                        .font(.headline).foregroundStyle(deskTint)
+                        .font(.headline).foregroundStyle(model.entitlement?.active == true ? deskTint : Color.secondary)
                     Spacer()
                     if model.entitlement?.accessType == "stripe" { Text("$5 / month").foregroundStyle(.secondary) }
                 }
