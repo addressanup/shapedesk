@@ -42,6 +42,105 @@ locally with `python3 -m http.server -d website 8000`.
 A grid icon appears in your menu bar. Click it, pick a shape, done.
 "Reset to grid" puts everything back into a normal sorted grid.
 
+## AI sorting with ShapeDesk Pro
+
+AI Sort is bundled into the app and uses a vendor-managed Jev integration.
+Customers subscribe to **ShapeDesk Pro for $5 USD/month**, including **1,000 AI
+checks per UTC calendar month**, shared across up to **3 Macs**. Subscribe from
+Account, complete Stripe Checkout, and return to the app to activate. A recovery
+key in Account restores access on another Mac. Customers never supply a TypeSafe
+API key. Customer credentials stay in macOS Keychain; the Jev key stays on the backend.
+
+The paid service implementation and setup are in [server/README.md](server/README.md).
+The service runs at `https://api.shapedesk.space`, with a separate Stripe test
+environment. **Live purchases remain disabled pending a full live Stripe secret
+key**; the connected CLI's saved live key is masked and cannot authenticate the
+server. Server-granted owner access uses the same hosted classifier and quota.
+Desktop shapes remain free, and local undo works without an active subscription
+or network connection. See the server README for deployment and verification status.
+
+### Finder integration
+
+Install `ShapeDesk.app` in `/Applications` or `~/Applications` and launch it.
+Select files from a single folder, or select one folder, then right-click and
+choose **Services → Sort with ShapeDesk** (also in Finder's **Finder → Services**
+menu). The app opens an AI Sort window showing the selected scope. Click **Sort
+selection** to begin. Selecting a folder considers only its immediate files.
+Selections spanning multiple folders, aliases, hidden items and app packages are
+rejected. File and folder identities are checked again before processing.
+
+If the service is disabled, enable it in System Settings → Keyboard → Keyboard
+Shortcuts → Services → Files and Folders. Relaunch the installed app to refresh
+service registration. This uses the native macOS Services mechanism; it does not
+monitor every Finder folder or install a sync extension.
+
+Click **Sort Desktop** to start an automatic sorting pass. The app sends each
+file's name, extension, byte size, inferred content type/MIME type, creation
+date and modification date through the ShapeDesk service to the
+[TypeSafe Jev Choice API](https://docs.typesafe.ai/api). File contents and full
+paths are not sent. The integration pins `jev-1.13.0` so a model alias update
+cannot silently change file-moving decisions.
+
+The exact choices are **Screenshots, Recordings, Videos, Audio, Images, Docs,
+Code, Other**. Only a valid answer with **`confidence > 0.8`** moves a file;
+exactly `0.8`, lower confidence, malformed answers and processing errors all
+leave the file in place. The returned `confidence` is used directly, rather
+than the winning option's probability. Other files continue after a file fails.
+
+- Each pass scans only visible regular files directly in the chosen folder (Desktop by default). Directories,
+  packages, symbolic links and Finder aliases are excluded. Category directories
+  are created as needed and are never recursively scanned.
+- The panel updates scanned, moved and skipped totals, progress, and moved/skipped
+  counts for each category. Skips without a classification appear as Unclassified.
+  **Stop** cancels outstanding network work and leaves remaining files untouched.
+- Collisions receive numbered filenames, such as `report (1).pdf`. Atomic
+  exclusive renames refuse to overwrite any existing file, directory or link,
+  including one created concurrently. The same protection applies during undo.
+- Immutable/read-only files, advisory-locked files, open files reported by macOS,
+  incomplete downloads, undownloaded iCloud files, hard links and files modified
+  in the last two seconds are left alone. Identity, size and modification time
+  are checked again after classification. Category directory links are refused.
+- **Undo last sort** restores the latest pending sorting pass. Undo survives app
+  restarts, preserves newly created desktop files using collision names, and
+  allows retrying files that could not be restored. It checks file identities so
+  a replacement file with the same name is not moved. Empty category folders remain.
+
+Each move and undo first writes and syncs an intent record in
+`~/Library/Application Support/ShapeDesk/SortHistory`. These records recover
+interrupted operations by checking the recorded file identity at the source and
+destination. History write failures prevent the corresponding move; unreadable
+history blocks new sorts while preserving the existing records. A filesystem
+lock excludes concurrent sorting/undo across app instances.
+
+Sorting runs when requested; it does not continuously watch Desktop. Open-file
+detection is a bounded `lsof` check plus a nonblocking advisory lock. As with other
+macOS file tools, an uncooperative process can open or change a file after the last
+check; there is no OS-wide mandatory lock against every writer. Cross-volume moves
+fail safely instead of falling back to copy-and-delete. Model accuracy depends on
+the metadata available; a confidence threshold does not guarantee a correct category.
+
+macOS may ask for access to the selected Desktop, Documents or Downloads folder. AI sorting uses filesystem access directly;
+the separate Finder Automation permission is for arranging icons into shapes.
+
+## Tests
+
+```sh
+swift test --enable-code-coverage
+```
+
+Tests use disposable temporary desktops and a mocked TypeSafe transport. They
+cover the strict confidence boundary (including nonfinite/invalid scores), all
+eight categories, request/response validation, rate limits and cancellation,
+shallow/hidden-file filtering, metadata changes, locks and open files, Unicode
+filenames, competing writers, journal failures, restart recovery, partial undo,
+and concurrent sorter instances. Tests never sort your actual desktop or require
+a TypeSafe key. Hosted-client tests cover credential boundaries, transport replay,
+quota denial and subscription-independent undo. Finder tests cover file selections,
+shallow folder scans and replacement identity checks. Run `npm --prefix server run
+test:postgres` for the backend's real-database concurrency and metering tests.
+Live model quality and checkout/account authentication require the deployed service
+and your configured provider accounts.
+
 ## Requirements
 
 - macOS 13 or later, Apple Silicon or Intel (Swift toolchain to build;

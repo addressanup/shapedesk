@@ -1,0 +1,9 @@
+{
+  "rewrites": [
+    { "source": "/v1/:path*", "destination": "/api/service" },
+    { "source": "/checkout/:path*", "destination": "/api/service" },
+    { "source": "/billing/:path*", "destination": "/api/service" }
+  ],
+  "functions": { "api/service.js": { "maxDuration": 60 } },
+  "regions": ["iad1"]
+}

@@ -2,29 +2,75 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>CFBundleName</key>
-    <string>ShapeDesk</string>
-    <key>CFBundleDisplayName</key>
-    <string>ShapeDesk</string>
-    <key>CFBundleIdentifier</key>
-    <string>com.shapedesk.app</string>
-    <key>CFBundleVersion</key>
-    <string>1.0</string>
-    <key>CFBundleShortVersionString</key>
-    <string>1.0</string>
-    <key>CFBundleExecutable</key>
-    <string>ShapeDesk</string>
-    <key>CFBundleIconFile</key>
-    <string>AppIcon</string>
-    <key>CFBundleIconName</key>
-    <string>AppIcon</string>
-    <key>CFBundlePackageType</key>
-    <string>APPL</string>
-    <key>LSMinimumSystemVersion</key>
-    <string>13.0</string>
-    <key>LSUIElement</key>
-    <true/>
-    <key>NSAppleEventsUsageDescription</key>
-    <string>ShapeDesk needs to control Finder to arrange your desktop icons into shapes.</string>
+	<key>CFBundleName</key>
+	<string>ShapeDesk</string>
+	<key>CFBundleDisplayName</key>
+	<string>ShapeDesk</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.shapedesk.app</string>
+	<key>CFBundleVersion</key>
+	<string>1.1.0</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.1</string>
+	<key>CFBundleExecutable</key>
+	<string>ShapeDesk</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
+	<key>CFBundleIconName</key>
+	<string>AppIcon</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>13.0</string>
+	<key>LSUIElement</key>
+	<true/>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>ShapeDesk needs to control Finder to arrange your desktop icons into shapes.</string>
+	<key>NSDesktopFolderUsageDescription</key>
+	<string>ShapeDesk sorts desktop files into category folders and restores them when you undo a sort.</string>
+	<key>NSDocumentsFolderUsageDescription</key>
+	<string>ShapeDesk sorts files you select in Finder and restores them when you undo.</string>
+	<key>NSDownloadsFolderUsageDescription</key>
+	<string>ShapeDesk sorts files you select in Finder and restores them when you undo.</string>
+	<key>ShapeDeskAPIBaseURL</key>
+	<string>https://api.shapedesk.space</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>ShapeDesk billing return</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>shapedesk</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
+	</array>
+	<key>NSServices</key>
+	<array>
+		<dict>
+			<key>NSMenuItem</key>
+			<dict>
+				<key>default</key>
+				<string>Sort with ShapeDesk</string>
+			</dict>
+			<key>NSMessage</key>
+			<string>sortWithShapeDesk</string>
+			<key>NSPortName</key>
+			<string>ShapeDesk</string>
+			<key>NSSendFileTypes</key>
+			<array>
+				<string>public.item</string>
+			</array>
+			<key>NSRequiredContext</key>
+			<dict>
+				<key>NSApplicationIdentifier</key>
+				<string>com.apple.finder</string>
+			</dict>
+			<key>NSServiceDescription</key>
+			<string>Sort selected files into folders using ShapeDesk Pro.</string>
+		</dict>
+	</array>
 </dict>
 </plist>
