@@ -165,6 +165,23 @@ Archive: `dist/ShapeDesk.zip`, SHA-256
 The app uses an ad-hoc signature; Developer ID signing and notarization are still
 required for normal public distribution. No new GitHub release was published.
 
+Verified on 2026-10-07; account portal API, commit `b77744a`:
+
+- Additive migration (`devices.last_seen_at`) applied to staging, then production,
+  over the unpooled URLs. Staging and then production were deployed. The previous
+  production deployment, `shapedesk-7xdm94syf`, is the rollback target.
+- On both hosts, health and plans return 200. Only `https://shapedesk.space` receives
+  `Access-Control-Allow-Origin` (with `Vary: Origin`); its preflight returns 204, and a
+  foreign origin's preflight returns 403. Unknown recovery keys get 403
+  `invalid_license`, malformed keys 400, and bad device handles 400. Device routes
+  without credentials still return 401.
+- Production, signed in with the owner recovery key: the account summary returned
+  owner access, usage and one device, without echoing the key. A throwaway device was
+  activated, found by its new handle, deactivated through `/v1/account/deactivate`
+  (a repeat returned 404 `device_not_found`), and the original Mac stayed active.
+  `/v1/account/portal` returns 409 `billing_unavailable` for owner access.
+- 46 Node/Postgres tests passed.
+
 To enable real purchases later: put a full live Stripe secret in `server/.env`,
 run `node server/scripts/configure-stripe.mjs live https://api.shapedesk.space`,
 then `node server/scripts/prepare-host.mjs live` and deploy the verified server.
