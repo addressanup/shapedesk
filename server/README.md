@@ -107,12 +107,24 @@ changing existing schema. The initial deployment starts with a new empty databas
 | POST | `/v1/classify` | Idempotent, metered Jev classification |
 | POST | `/v1/portal` | Authenticated Stripe billing portal URL |
 | POST | `/v1/deactivate` | Revoke this Mac's activation |
+| POST | `/v1/account` | Recovery-key account summary for the website |
+| POST | `/v1/account/portal` | Stripe billing portal URL via recovery key |
+| POST | `/v1/account/deactivate` | Revoke one device by its public handle |
 | POST | `/v1/webhooks/stripe` | Verify raw Stripe signature and reconcile billing |
 
 Authenticated routes use `Authorization: Bearer <recovery key>` and
 `X-ShapeDesk-Instance: <UUID>`. App request bodies are capped at 8 KiB and webhook
 bodies at 256 KiB. Browser pages use a restrictive CSP and no-referrer policy.
 The app accepts checkout/portal URLs only on Stripe's exact HTTPS hosts.
+
+The account page at `https://shapedesk.space/account` signs in with the same
+recovery key, sent only in the JSON body. The `/v1/account*` routes and
+`/v1/plans` answer browser CORS solely for `WEB_ORIGIN` (default
+`https://shapedesk.space`); other origins get no allow headers and their
+preflights are denied. Devices are listed as 32-character HMAC handles, never
+instance IDs, and neither the key nor any `license_id` appears in responses.
+`last_seen_at` records each device's most recent authorized use, refreshed at
+most every ten minutes.
 
 ## Verification
 

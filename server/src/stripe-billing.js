@@ -41,18 +41,32 @@ export function stripeBilling({ db, stripe, config, clock = () => new Date() }) 
       if (count >= config.deviceLimit) fail(403, 'device_limit');
     }
     const instanceID = existing?.instance_id ?? randomUUID();
-    await q(`INSERT INTO devices(license_id, device_id, instance_id, active, checked_at, expires_at)
-      VALUES ($1, $2, $3, true, $4, $5) ON CONFLICT (license_id, device_id)
-      DO UPDATE SET active = true, checked_at = EXCLUDED.checked_at, expires_at = EXCLUDED.expires_at`,
+    await q(`INSERT INTO devices(license_id, device_id, instance_id, active, checked_at, expires_at, last_seen_at)
+      VALUES ($1, $2, $3, true, $4, $5, $4) ON CONFLICT (license_id, device_id)
+      DO UPDATE SET active = true, checked_at = EXCLUDED.checked_at, expires_at = EXCLUDED.expires_at,
+      last_seen_at = EXCLUDED.last_seen_at`,
     [deviceID, instanceID, clock(), value.valid_until]);
     return { instanceID, active: isActive(value) };
   }
   async function authorize(q, auth, allowInactive = false) {
-    const device = (await q('SELECT active FROM devices WHERE license_id = $1 AND instance_id = $2', [auth.instance])).rows[0];
+    const device = (await q('SELECT active, last_seen_at FROM devices WHERE license_id = $1 AND instance_id = $2', [auth.instance])).rows[0];
     if (!device?.active) fail(401, 'inactive');
+    if (!device.last_seen_at || clock() - new Date(device.last_seen_at) > 600000)
+      await q('UPDATE devices SET last_seen_at = $3 WHERE license_id = $1 AND instance_id = $2', [auth.instance, clock()]);
     const active = isActive(await account(q));
     if (!active && !allowInactive) fail(401, 'inactive');
     return active;
+  }
+  async function access(q) {
+    return isActive(await account(q));
+  }
+  async function accountPortal(q) {
+    const value = await account(q);
+    if (value.kind !== 'stripe') fail(409, 'billing_unavailable');
+    if (!stripe) fail(503, 'billing_unavailable');
+    const session = await stripe.billingPortal.sessions.create({ customer: value.customer_id,
+      configuration: config.stripePortal, return_url: `${config.webOrigin}/account` });
+    return { url: session.url };
   }
   async function details(q) {
     const value = (await q('SELECT kind, status, valid_until FROM subscriptions WHERE license_id = $1')).rows[0];
@@ -164,5 +178,5 @@ export function stripeBilling({ db, stripe, config, clock = () => new Date() }) 
     });
     return { received: true };
   }
-  return { plan, activate, authorize, details, portal, checkout, webhook };
+  return { plan, activate, authorize, details, portal, accountPortal, access, checkout, webhook };
 }

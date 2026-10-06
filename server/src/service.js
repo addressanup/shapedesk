@@ -55,7 +55,8 @@ export function service({ db, upstream, config, billing, clock = () => new Date(
       manageURL: 'https://app.lemonsqueezy.com/my-orders', monthlyLimit: config.limit };
     // Trusted Vercel forwarding header in production, socket address in the local runner.
     const ip = request.headers['x-vercel-forwarded-for'] || request.socket?.remoteAddress || 'unknown';
-    await db.rate(`ip:${path === '/v1/activate' ? 'activate:' : ''}${hash('ip', ip)}`, path === '/v1/activate' ? 10 : 180, 60);
+    const bucket = path === '/v1/activate' ? ['activate:', 10] : path.startsWith('/v1/account') ? ['account:', 30] : ['', 180];
+    await db.rate(`ip:${bucket[0]}${hash('ip', ip)}`, bucket[1], 60);
     if (billing && method === 'POST' && ['/v1/checkout', '/v1/checkout/complete'].includes(path)) {
       const complete = path.endsWith('/complete');
       const result = await billing.checkout(request, complete);
@@ -91,6 +92,33 @@ export function service({ db, upstream, config, billing, clock = () => new Date(
           throw error;
         }
         return { instanceID: result.instance.id, entitlement: await usage(q) };
+      });
+    }
+    if (method === 'POST' && path.startsWith('/v1/account')) {
+      const routes = ['/v1/account', '/v1/account/portal', '/v1/account/deactivate'];
+      if (!billing || !routes.includes(path)) fail(404, 'not_found');
+      const { licenseKey, device } = request.body ?? {};
+      if (!text(licenseKey, 256) || !licenseKey || /\s/.test(licenseKey)) fail(400, 'invalid_license');
+      const id = hash('license', licenseKey);
+      const deviceHandle = row => hash('device', row.instance_id).slice(0, 32);
+      const summary = async q => {
+        const entitlement = await usage(q, await billing.access(q));
+        const { rows } = await q(`SELECT instance_id, checked_at, last_seen_at FROM devices
+          WHERE license_id = $1 AND active ORDER BY checked_at, instance_id`);
+        return { ...entitlement, deviceLimit: config.deviceLimit, devices: rows.map(row => ({ id: deviceHandle(row),
+          activatedAt: new Date(row.checked_at).toISOString(),
+          lastSeenAt: row.last_seen_at ? new Date(row.last_seen_at).toISOString() : null })) };
+      };
+      if (path === '/v1/account') return db.withLicense(id, summary);
+      if (path === '/v1/account/portal') return db.withLicense(id, q => billing.accountPortal(q));
+      if (!/^[0-9a-f]{32}$/.test(device ?? '')) fail(400, 'invalid_request');
+      return db.withLicense(id, async q => {
+        await billing.access(q);
+        const target = (await q('SELECT instance_id FROM devices WHERE license_id = $1 AND active')).rows
+          .find(row => deviceHandle(row) === device);
+        if (!target) fail(404, 'device_not_found');
+        await q('UPDATE devices SET active = false WHERE license_id = $1 AND instance_id = $2', [target.instance_id]);
+        return summary(q);
       });
     }
     const auth = credentials(request);

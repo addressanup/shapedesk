@@ -3,6 +3,9 @@ export function configuration(env = process.env) {
     if (!env[name]) throw new Error(`Missing server configuration: ${name}`);
   }
   const origin = new URL(env.SERVICE_ORIGIN);
+  let web = null;
+  try { web = new URL(env.WEB_ORIGIN ?? 'https://shapedesk.space'); } catch { /* invalid */ }
+  const localWeb = web?.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(web.hostname) && web.port !== '';
   const limit = Number(env.MONTHLY_CHECK_LIMIT ?? 1000);
   const deviceLimit = Number(env.DEVICE_LIMIT ?? 3);
   const stripeLive = env.STRIPE_MODE === 'live';
@@ -12,13 +15,15 @@ export function configuration(env = process.env) {
   if (!['test', 'live'].includes(env.STRIPE_MODE) ||
       (hasBilling && (!keyPattern.test(env.STRIPE_SECRET_KEY ?? '') || !/^price_[a-zA-Z0-9]+$/.test(env.STRIPE_PRICE_ID ?? ''))) ||
       origin.protocol !== 'https:' || origin.username || origin.password || origin.search || origin.hash || origin.pathname !== '/' ||
+      !web || web.username || web.password || web.search || web.hash || web.pathname !== '/' ||
+      (web.protocol !== 'https:' && !(localWeb && !stripeLive)) ||
       !Number.isSafeInteger(limit) || limit !== 1000 || !Number.isInteger(deviceLimit) || deviceLimit < 1 || deviceLimit > 10 ||
       env.IDENTITY_HASH_KEY.length < 64 || /\s/.test(env.TYPESAFE_API_KEY) ||
       (checkoutEnabled && (!hasBilling || !env.STRIPE_WEBHOOK_SECRET?.startsWith('whsec_') || !env.STRIPE_PORTAL_CONFIGURATION_ID?.startsWith('bpc_')))) {
     throw new Error('Invalid server configuration');
   }
   return { databaseURL: env.DATABASE_URL, jevKey: env.TYPESAFE_API_KEY,
-    hashKey: env.IDENTITY_HASH_KEY, limit, deviceLimit, origin: origin.origin,
+    hashKey: env.IDENTITY_HASH_KEY, limit, deviceLimit, origin: origin.origin, webOrigin: web.origin,
     stripeKey: env.STRIPE_SECRET_KEY, stripePrice: env.STRIPE_PRICE_ID,
     stripeWebhook: env.STRIPE_WEBHOOK_SECRET, stripePortal: env.STRIPE_PORTAL_CONFIGURATION_ID,
     stripeAutomaticTax: env.STRIPE_AUTOMATIC_TAX === 'true', stripeLive, checkoutEnabled };

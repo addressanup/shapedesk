@@ -12,7 +12,7 @@ import { service } from '../src/service.js';
 
 const url = process.env.SHAPEDESK_TEST_DATABASE_URL;
 const integration = (name, fn) => test(name, { skip: !url }, fn);
-let db, billing, stripe, handle, subscription, session, config, creates, aiCalls, instant;
+let db, billing, stripe, handle, subscription, session, config, creates, aiCalls, instant, portalInput;
 const file = { name: 'report.pdf', fileExtension: 'pdf', byteSize: 100,
   createdAt: '2026-10-01T00:00:00Z', modifiedAt: '2026-10-01T00:00:00Z' };
 before(async () => {
@@ -25,7 +25,7 @@ beforeEach(async () => {
   await db.pool.query('TRUNCATE checks, usage, devices, subscriptions, checkout_attempts, billing_events, licenses, rate_limits');
   instant = new Date('2026-10-05T00:00:00Z'); creates = 0; aiCalls = 0;
   config = { hashKey: 'x'.repeat(64), stripePrice: 'price_shape', limit: 3, deviceLimit: 2,
-    stripeLive: false, checkoutEnabled: true, origin: 'https://api.shapedesk.test' };
+    stripeLive: false, checkoutEnabled: true, origin: 'https://api.shapedesk.test', webOrigin: 'https://shapedesk.test' };
   subscription = { id: 'sub_shape', customer: 'cus_shape', livemode: false, status: 'active',
     current_period_end: Date.parse('2026-11-05T00:00:00Z') / 1000,
     items: { data: [{ quantity: 1, price: { id: 'price_shape' } }] } };
@@ -42,7 +42,7 @@ beforeEach(async () => {
       async retrieve() { return structuredClone(session); }
     } },
     subscriptions: { async retrieve() { return structuredClone(subscription); } },
-    billingPortal: { sessions: { async create(input) { assert.equal(input.customer, 'cus_shape'); return { url: 'https://billing.stripe.com/p/session/test' }; } } }
+    billingPortal: { sessions: { async create(input) { portalInput = input; assert.equal(input.customer, 'cus_shape'); return { url: 'https://billing.stripe.com/p/session/test' }; } } }
   };
   billing = stripeBilling({ db, stripe, config, clock: () => instant });
   handle = service({ db, billing, config, clock: () => instant, upstream: { async classify() {
@@ -63,6 +63,7 @@ async function paid() {
   return { ...p, ...(await handle(req('checkout/complete', p))) };
 }
 const event = (type, object, id = 'evt_' + randomUUID()) => ({ id, type, livemode: false, data: { object } });
+const deviceHandle = instance => createHmac('sha256', config.hashKey).update('device:' + instance).digest('hex').slice(0, 32);
 
 integration('Stripe checkout is idempotent and a purchase secret is bound to its Mac', async () => {
   const p = purchase();
@@ -183,6 +184,91 @@ integration('full refunds and disputes suspend only the matching subscription an
   await billing.webhook(event('charge.dispute.created', { id: 'dp_shape', charge: 'ch_shape' }));
   await rejects(classify(auth), 'inactive');
   assert.ok((await handle(req('portal', {}, auth))).url);
+});
+
+integration('the web account summary shows usage and device handles without exposing secrets', async () => {
+  const a = await paid();
+  const b = { ...a, ...(await handle(req('activate', { ...a, deviceID: randomUUID() }))) };
+  await classify(a);
+  const summary = await handle(req('account', { licenseKey: a.licenseKey }));
+  assert.equal(summary.active, true);
+  assert.equal(summary.accessType, 'stripe');
+  assert.equal(summary.canManageBilling, true);
+  assert.equal(summary.used, 1);
+  assert.equal(summary.deviceLimit, 2);
+  assert.deepEqual(summary.devices.map(d => d.id).sort(), [deviceHandle(a.instanceID), deviceHandle(b.instanceID)].sort());
+  for (const device of summary.devices) {
+    assert.match(device.id, /^[0-9a-f]{32}$/);
+    assert.ok(Number.isFinite(Date.parse(device.activatedAt)));
+    assert.ok(device.lastSeenAt);
+  }
+  const raw = JSON.stringify(summary);
+  assert.ok(!raw.includes(a.licenseKey) && !raw.includes(a.instanceID) && !raw.includes(b.instanceID));
+});
+
+integration('account sign-in rejects unknown and malformed recovery keys', async () => {
+  await paid();
+  await rejects(handle(req('account', { licenseKey: 'sd_' + '0'.repeat(64) })), 'invalid_license');
+  await rejects(handle(req('account', { licenseKey: 'sd_ 123' })), 'invalid_license');
+});
+
+integration('account deactivation frees a device slot by public handle only', async () => {
+  const a = await paid();
+  const b = { ...a, ...(await handle(req('activate', { ...a, deviceID: randomUUID() }))) };
+  const summary = await handle(req('account/deactivate', { licenseKey: a.licenseKey, device: deviceHandle(b.instanceID) }));
+  assert.deepEqual(summary.devices.map(d => d.id), [deviceHandle(a.instanceID)]);
+  await rejects(classify(b), 'inactive');
+  assert.equal((await classify(a)).entitlement.used, 1);
+  await rejects(handle(req('account/deactivate', { licenseKey: a.licenseKey, device: deviceHandle(b.instanceID) })), 'device_not_found');
+  await rejects(handle(req('account/deactivate', { licenseKey: a.licenseKey, device: 'f'.repeat(32) })), 'device_not_found');
+  await rejects(handle(req('account/deactivate', { licenseKey: a.licenseKey, device: 'not-a-handle' })), 'invalid_request');
+  const c = await handle(req('activate', { ...a, deviceID: randomUUID() }));
+  assert.ok(c.instanceID);
+});
+
+integration('the account portal serves Stripe customers only', async () => {
+  const a = await paid();
+  assert.equal((await handle(req('account/portal', { licenseKey: a.licenseKey }))).url, 'https://billing.stripe.com/p/session/test');
+  assert.equal(portalInput.return_url, 'https://shapedesk.test/account');
+  const p = purchase();
+  const id = createHmac('sha256', config.hashKey).update('license:' + p.licenseKey).digest('hex');
+  await db.withLicense(id, q => q(`INSERT INTO subscriptions(license_id, kind, status, valid_until)
+    VALUES ($1, 'owner', 'active', $2)`, [new Date(instant.getTime() + 86400000)]));
+  await handle(req('activate', p));
+  await rejects(handle(req('account/portal', { licenseKey: p.licenseKey })), 'billing_unavailable');
+  const summary = await handle(req('account', { licenseKey: p.licenseKey }));
+  assert.equal(summary.accessType, 'owner');
+  assert.equal(summary.canManageBilling, false);
+});
+
+integration('a canceled subscription reports inactive and still allows account device removal', async () => {
+  const a = await paid();
+  subscription.status = 'canceled';
+  await billing.webhook(event('customer.subscription.updated', { id: 'sub_shape' }));
+  const summary = await handle(req('account', { licenseKey: a.licenseKey }));
+  assert.equal(summary.active, false);
+  assert.equal(summary.subscriptionStatus, 'canceled');
+  const after = await handle(req('account/deactivate', { licenseKey: a.licenseKey, device: deviceHandle(a.instanceID) }));
+  assert.equal(after.devices.length, 0);
+});
+
+integration('account routes have a dedicated thirty-per-minute rate bucket', async () => {
+  const a = await paid();
+  for (let i = 0; i < 30; i++) await handle(req('account', { licenseKey: a.licenseKey }));
+  await rejects(handle(req('account', { licenseKey: a.licenseKey })), 'rate_limited');
+});
+
+integration('last_seen_at is set on authorized use and refreshed at most every ten minutes', async () => {
+  const a = await paid();
+  await db.pool.query('UPDATE devices SET last_seen_at = NULL');
+  await handle(req('entitlement', null, a));
+  const first = (await db.pool.query('SELECT last_seen_at FROM devices')).rows[0].last_seen_at;
+  assert.ok(first);
+  await handle(req('entitlement', null, a));
+  assert.equal((await db.pool.query('SELECT last_seen_at FROM devices')).rows[0].last_seen_at.getTime(), first.getTime());
+  instant = new Date(instant.getTime() + 660000);
+  await handle(req('entitlement', null, a));
+  assert.ok((await db.pool.query('SELECT last_seen_at FROM devices')).rows[0].last_seen_at > first);
 });
 
 test('Stripe webhook requires a fresh signature over exact bytes, bounds bodies and sanitizes failures', async t => {

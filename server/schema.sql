@@ -58,3 +58,4 @@ CREATE TABLE IF NOT EXISTS billing_events (
   type text NOT NULL,
   processed_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE devices ADD COLUMN IF NOT EXISTS last_seen_at timestamptz;
