@@ -71,7 +71,8 @@ target, so its results and undo stay put. AI Sort follows visible folders in
 your home folder (in `~/Library`, only iCloud Drive and
 `~/Library/CloudStorage`) and on other drives. Hidden folders, app bundles,
 system folders such as `/Applications`, and views such as Recents fall back
-to the Desktop.
+to the Desktop. To sort the Desktop instead of a folder, click
+**Use Desktop**.
 
 Install `ShapeDesk.app` in `/Applications` or `~/Applications` and launch it.
 Select files from a single folder, or select one folder, then right-click and
@@ -80,9 +81,9 @@ menu). The app opens an AI Sort window showing the selected scope. Click **Sort
 selection** (or **Sort folder**) to begin. Selecting a folder considers only
 its immediate files. Selections spanning multiple folders, aliases, hidden
 items and app packages are rejected. File and folder identities are checked
-again before processing. Files or a folder you pick this way, or with
-**Change → Choose a folder…**, stay the target until you choose **Change →
-Desktop** or open AI Sort from the menu bar again.
+again before processing. Files or a folder you pick this way stay the
+target until you click **Use Desktop** or open AI Sort from the menu bar
+again.
 
 If the service is disabled, enable it in System Settings → Keyboard → Keyboard
 Shortcuts → Services → Files and Folders. Relaunch the installed app to refresh
@@ -104,9 +105,10 @@ leave the file in place. The returned `confidence` is used directly, rather
 than the winning option's probability. Other files continue after a file fails.
 
 - Each pass scans only visible regular files directly in the chosen folder
-  (the Desktop, unless AI Sort follows a Finder folder or you choose one).
-  Directories, packages, symbolic links and Finder aliases are excluded.
-  Category directories are created as needed and are never recursively scanned.
+  (the Desktop, unless AI Sort follows a Finder folder or you pick one
+  with Services). Directories, packages, symbolic links and Finder aliases
+  are excluded. Category directories are created as needed and are never
+  recursively scanned.
 - The panel updates scanned, moved and skipped totals, progress, and moved/skipped
   counts for each category. Skips without a classification appear as Unclassified.
   **Stop** cancels outstanding network work and leaves remaining files untouched.

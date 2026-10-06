@@ -182,23 +182,6 @@ final class SortingViewModel: ObservableObject {
         finishLoading()
     }
 
-    func chooseFolder() {
-        guard !isBusy else { return }
-        let panel = NSOpenPanel()
-        panel.canChooseDirectories = true
-        panel.canChooseFiles = false
-        panel.allowsMultipleSelection = false
-        panel.message = "ShapeDesk sorts only the files directly inside this folder."
-        panel.prompt = "Choose folder"
-        panel.begin { [weak self] result in
-            guard result == .OK, let url = panel.url else { return }
-            Task { @MainActor in
-                do { try self?.select(SortSelection.resolve([url])) }
-                catch { self?.reportSelectionError(error) }
-            }
-        }
-    }
-
     func reportSelectionError(_ error: Error) {
         serviceError = error.localizedDescription
         page = .sort

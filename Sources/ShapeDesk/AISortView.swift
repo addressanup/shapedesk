@@ -70,11 +70,10 @@ struct AISortView: View {
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 Spacer()
-                Menu("Change") {
-                    Button("Desktop") { model.selectDesktop() }
-                    Button("Choose a folder…") { model.chooseFolder() }
+                if model.isFinderSelection {
+                    Button("Use Desktop") { model.selectDesktop() }
+                        .disabled(model.isBusy || otherOperationRunning)
                 }
-                .fixedSize().disabled(model.isBusy || otherOperationRunning)
             }
             .padding(16)
             .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 12))
