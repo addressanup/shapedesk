@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Account · ShapeDesk Pro</title>
+  <meta name="robots" content="noindex">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#110d1e">
+  <meta name="color-scheme" content="dark">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/fonts/gabarito.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/martian-mono.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/site.css">
+  <script type="module" src="/js/account.js"></script>
+</head>
+<body>
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="cup" viewBox="0 0 16 16">
+        <path fill="currentColor" d="M2.2 6.2h9.2v3.9a4 4 0 0 1-4 4H6.2a4 4 0 0 1-4-4z"/>
+        <path fill="none" stroke="currentColor" stroke-width="1.4" d="M11.4 7.4h.9a1.9 1.9 0 0 1 0 3.8h-1.1"/>
+        <path fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" d="M5.1 1.6c-.7.8.7 1.4 0 2.6M8.3 1.6c-.7.8.7 1.4 0 2.6"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <header class="menubar">
+    <nav class="menubar__left" aria-label="Site">
+      <a class="menubar__app" href="/">ShapeDesk</a>
+      <a class="menubar__item" href="/#install">Install</a>
+    </nav>
+    <div class="menubar__right">
+      <a class="menubar__item" href="/account" aria-current="page">Account</a>
+      <a class="menubar__coffee" href="https://buymeacoffee.com/anup.tbc">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#cup"/></svg>
+        <span class="menubar__coffee-label">Buy me a coffee</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="accountdesk">
+    <div class="accountwin">
+      <div class="aiwin__bar" aria-hidden="true">
+        <span class="aiwin__lights"><i></i><i></i><i></i></span>
+        <span class="aiwin__title">ShapeDesk — Account</span>
+      </div>
+      <div class="accountwin__body">
+
+        <section id="view-signin" class="acct-block">
+          <h1>Your Pro account</h1>
+          <p class="acct-sub">Sign in with your recovery key to see this month's AI checks, manage your Macs and open billing.</p>
+          <form id="signin-form" class="acct-block" method="post">
+            <div class="acct-field">
+              <label for="key-input">Recovery key</label>
+              <div class="acct-keyrow">
+                <input id="key-input" type="password" autocomplete="off" spellcheck="false"
+                       placeholder="Paste your recovery key">
+                <button class="btn" id="key-toggle" type="button" aria-pressed="false">Show</button>
+              </div>
+            </div>
+            <div>
+              <button class="btn btn--primary" id="signin-btn" type="submit">Sign in</button>
+            </div>
+          </form>
+          <details class="acct-help">
+            <summary>Where's my key?</summary>
+            <p>In ShapeDesk, open AI Sort, choose Account, then Copy recovery key.</p>
+            <div class="acct-help__mock" aria-hidden="true">
+              <span class="mock__btn">Manage billing</span>
+              <span class="mock__btn mock__btn--focus">Copy recovery key</span>
+              <span class="mock__btn">Deactivate this Mac</span>
+            </div>
+            <p>On another Mac, choose Already subscribed? Restore access and paste it there.</p>
+          </details>
+          <p class="acct-note">Your key goes only to api.shapedesk.space over HTTPS. This page never saves it. Close the tab or sign out to forget it.</p>
+          <p><a class="acct-link" href="/#pro">No Pro yet? It starts in the app</a></p>
+        </section>
+
+        <section id="view-account" class="acct-block" hidden>
+          <h1 id="acct-title" tabindex="-1">Pro active</h1>
+          <p class="acct-sub" id="acct-sub"></p>
+
+          <div class="acct-card">
+            <h2>This month</h2>
+            <p class="acct-usage"><b id="acct-remaining">0</b><span>checks left</span><span class="acct-used" id="acct-used"></span></p>
+            <div class="acct-meter" aria-hidden="true"><i id="acct-meter"></i></div>
+            <p class="acct-reset" id="acct-reset"></p>
+          </div>
+
+          <div class="acct-block">
+            <h2>Billing</h2>
+            <div><button class="btn" id="manage-billing" type="button" hidden>Manage billing</button></div>
+            <p class="acct-note" id="billing-note"></p>
+          </div>
+
+          <div class="acct-macs">
+            <h2>Macs</h2>
+            <p id="macs-count"></p>
+            <ul class="acct-maclist" id="mac-list"></ul>
+            <p class="acct-note" id="macs-empty" hidden>No Macs are active. On a Mac, open ShapeDesk → AI Sort → Account → Already subscribed? Restore access.</p>
+            <p class="acct-note">To add a Mac, open ShapeDesk → AI Sort → Account → Already subscribed? Restore access and paste your recovery key.</p>
+          </div>
+
+          <div class="acct-actions">
+            <button class="btn" id="refresh" type="button">Refresh</button>
+            <span class="spacer"></span>
+            <button class="btn" id="signout" type="button">Sign out</button>
+          </div>
+        </section>
+
+        <p class="acct-note-line" id="acct-note-line" role="status" hidden></p>
+        <p class="acct-alert" id="acct-alert" role="alert" hidden></p>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

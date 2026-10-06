@@ -2,14 +2,16 @@
 
 A macOS menu bar app that arranges your real desktop icons into shapes —
 heart, circle, star, spiral, wave — or spells out a word with them. Icons
-morph smoothly into formation, and everything is reversible.
+morph smoothly into formation, and everything is reversible. ShapeDesk Pro
+adds AI Sort, which files loose desktop files into category folders and can
+undo every sort.
 
 <p align="center">
   <a href="docs/demo.mp4">
-    <img src="docs/demo.webp" width="100%" alt="Real desktop folder icons arranging themselves into a heart, circle, star, spiral and wave, then spelling HELLO">
+    <img src="docs/demo.webp" width="100%" alt="Real desktop folder icons arranging into a heart, a circle, a star and the word HELLO, then AI Sort filing loose files into category folders and undo putting them back">
   </a>
 </p>
-<p align="center"><a href="docs/demo.mp4"><b>▶ Watch the full 30-second demo with sound</b></a></p>
+<p align="center"><a href="docs/demo.mp4"><b>▶ Watch the 39-second demo with sound</b></a></p>
 
 **Website and download:** [shapedesk.space](https://shapedesk.space)
 
@@ -38,6 +40,15 @@ Without Xcode 26 or later, `bundle.sh` builds the app without an icon and
 JavaScript ports of `Geometry.swift` and `TextShape.swift` in
 `website/js/`; keep them in step when the shape math changes. Preview it
 locally with `python3 -m http.server -d website 8000`.
+
+`website/account.html` is the customer account page at `/account`: visitors
+sign in with their Pro recovery key (sent only to `api.shapedesk.space` over
+HTTPS; the page never stores it) to see this month's checks, deactivate a
+Mac and open Stripe billing. To test it against a local API run `node
+server/src/dev.js` and open `account.html?api=http://127.0.0.1:8787` — the
+`api` override is honoured only on `localhost`/`127.0.0.1`. The Pro plan
+card on the front page also calls `GET /v1/plans` and shows a live
+availability chip when checkout is off.
 
 A grid icon appears in your menu bar. Click it, pick a shape, done.
 "Reset to grid" puts everything back into a normal sorted grid.
