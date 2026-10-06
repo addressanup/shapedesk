@@ -3,6 +3,83 @@ import Foundation
 @testable import ShapeDeskSorting
 
 final class FinderSelectionTests: XCTestCase {
+    private func folder(_ fixture: DesktopFixture, _ path: String) throws -> URL {
+        let url = fixture.base.appendingPathComponent(path)
+        try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+        return url
+    }
+
+    private func finderURL(_ url: URL) -> URL {
+        URL(fileURLWithPath: url.path + "/", isDirectory: true)
+    }
+
+    func testFinderFolderFallsBackToDesktop() throws {
+        let fixture = try DesktopFixture()
+        let home = fixture.base, desktop = fixture.desktop
+        XCTAssertNil(SortSelection.finderFolder(nil, desktop: desktop, home: home))
+        XCTAssertNil(SortSelection.finderFolder(desktop, desktop: desktop, home: home))
+        XCTAssertNil(SortSelection.finderFolder(finderURL(desktop), desktop: desktop, home: home))
+        XCTAssertNil(SortSelection.finderFolder(finderURL(fixture.base.appendingPathComponent("Missing")),
+                                                desktop: desktop, home: home))
+        XCTAssertNil(SortSelection.finderFolder(try fixture.file("one.pdf"), desktop: desktop, home: home))
+    }
+
+    func testFinderFolderFollowsVisibleFoldersInHomeAndCloudStorage() throws {
+        let fixture = try DesktopFixture()
+        let home = fixture.base, desktop = fixture.desktop
+        let urls = try [fixture.base] + ["Projects", "Projects/Client A",
+                     "Library/Mobile Documents/com~apple~CloudDocs/Notes",
+                     "Library/CloudStorage/Dropbox/Inbox"].map { try folder(fixture, $0) }
+        for url in urls {
+            let selection = SortSelection.finderFolder(finderURL(url), desktop: desktop, home: home)
+            XCTAssertNil(selection?.fileNames, url.path)
+            let name = url.standardizedFileURL.lastPathComponent
+            XCTAssertEqual(selection?.description, "Files in \(name)", url.path)
+        }
+    }
+
+    func testFinderFolderIgnoresLibraryHiddenPackagesLinksAndOutsideHome() throws {
+        let fixture = try DesktopFixture()
+        let home = fixture.base, desktop = fixture.desktop
+        var secret = try folder(fixture, "Secret")
+        var values = URLResourceValues()
+        values.isHidden = true
+        try secret.setResourceValues(values)
+        let projects = try folder(fixture, "Projects")
+        let link = fixture.base.appendingPathComponent("Shortcut")
+        try FileManager.default.createSymbolicLink(at: link, withDestinationURL: projects)
+        let rejected = try [folder(fixture, "Library"), folder(fixture, "Library/Preferences"),
+                            folder(fixture, ".config"), folder(fixture, "Projects/.git/objects"),
+                            secret, folder(fixture, "Secret/Inside"),
+                            folder(fixture, "Projects/Example.app/Contents"),
+                            folder(fixture, "Library/CloudStorage/Dropbox/.cache/blobs"),
+                            link, fixture.base.deletingLastPathComponent()]
+        for url in rejected {
+            XCTAssertNil(SortSelection.finderFolder(finderURL(url), desktop: desktop, home: home), url.path)
+        }
+    }
+
+    func testFinderFolderComparesIdentityAndRecognizesCategoryFolders() throws {
+        let fixture = try DesktopFixture()
+        let home = fixture.base, desktop = fixture.desktop
+        let projects = try folder(fixture, "Projects")
+        let first = SortSelection.finderFolder(finderURL(projects), desktop: desktop, home: home)
+        XCTAssertEqual(first, SortSelection.finderFolder(finderURL(projects), desktop: desktop, home: home))
+        try FileManager.default.moveItem(at: projects, to: fixture.base.appendingPathComponent("Moved"))
+        let moved = try folder(fixture, "Projects")
+        XCTAssertNotEqual(first, SortSelection.finderFolder(finderURL(moved), desktop: desktop, home: home))
+        let docs = try XCTUnwrap(SortSelection.finderFolder(finderURL(try folder(fixture, "Projects/Docs")),
+                                                          desktop: desktop, home: home))
+        XCTAssertTrue(docs.isCategoryFolder(of: projects))
+        let notes = try XCTUnwrap(SortSelection.finderFolder(finderURL(try folder(fixture, "Projects/Notes")),
+                                                           desktop: desktop, home: home))
+        XCTAssertFalse(notes.isCategoryFolder(of: projects))
+        XCTAssertFalse(docs.isCategoryFolder(of: fixture.base))
+        let images = try XCTUnwrap(SortSelection.finderFolder(finderURL(try folder(fixture, "Desktop/Images")),
+                                                            desktop: desktop, home: home))
+        XCTAssertTrue(images.isCategoryFolder(of: fixture.desktop))
+    }
+
     func testSelectedFilesOnlyAndUndoAfterRestart() async throws {
         let fixture = try DesktopFixture()
         let one = try fixture.file("one.pdf"), two = try fixture.file("two.txt")

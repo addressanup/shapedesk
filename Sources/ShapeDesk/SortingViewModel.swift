@@ -16,6 +16,8 @@ final class SortingViewModel: ObservableObject {
     @Published private(set) var plan: ProPlan?
     @Published private(set) var targetDescription = "Files on your Desktop"
     @Published private(set) var isFinderSelection = false
+    @Published private(set) var isFromFinder = false
+    @Published private var selection: SortSelection?
     @Published private(set) var status = "Ready to sort desktop files into category folders."
     @Published private(set) var settingsMessage = "Activate ShapeDesk Pro to use AI Sort."
     @Published var showSettings = false
@@ -35,6 +37,8 @@ final class SortingViewModel: ObservableObject {
     private var loaded = false
     private var billingReturnPending = false
     private var scopeID = UUID()
+    private var followsFinder = true
+    private var followRequest = UUID()
     private let desktop: URL
     private let history: URL
 
@@ -48,6 +52,13 @@ final class SortingViewModel: ObservableObject {
 
     var maySort: Bool { entitlement?.active == true && (entitlement?.remaining ?? 0) > 0 }
     var targetTitle: String { isFinderSelection ? targetDescription : "Desktop" }
+    var targetPath: String {
+        ((selection?.folder ?? desktop).path as NSString).abbreviatingWithTildeInPath
+    }
+    var sortButtonTitle: String {
+        guard let selection else { return "Sort Desktop" }
+        return selection.fileNames == nil ? "Sort folder" : "Sort selection"
+    }
     var accountTitle: String {
         if entitlement?.accessType == "owner" { return "Owner access" }
         if entitlement?.active == true { return "Pro active" }
@@ -102,18 +113,21 @@ final class SortingViewModel: ObservableObject {
         #endif
     }
 
-    func select(_ selection: SortSelection) throws {
+    func select(_ selection: SortSelection, fromFinder: Bool = false) throws {
         guard !isBusy else { throw SelectionBusy() }
         sorter = DesktopSorter(selection: selection, historyDirectory: history)
         scopeID = UUID()
+        self.selection = selection
         targetDescription = selection.description
         isFinderSelection = true
+        isFromFinder = fromFinder
+        followsFinder = fromFinder
         statistics = SortStatistics()
         canUndo = false
         status = selection.fileNames == nil
             ? "Ready. Only files directly inside this folder will be considered."
             : "Ready. Only the selected files will be considered."
-        page = .sort
+        if !fromFinder { page = .sort }
         serviceError = nil
         Task { await refreshUndo() }
     }
@@ -122,12 +136,31 @@ final class SortingViewModel: ObservableObject {
         guard !isBusy else { return }
         sorter = DesktopSorter(desktop: desktop, historyDirectory: history)
         scopeID = UUID()
+        selection = nil
         targetDescription = "Files on your Desktop"
         isFinderSelection = false
+        isFromFinder = false
+        followsFinder = true
         statistics = SortStatistics()
         canUndo = false
         status = "Ready to sort desktop files into category folders."
+        serviceError = nil
         Task { await refreshUndo() }
+    }
+
+    func followFinder(force: Bool, folder: @escaping @Sendable () throws -> URL?) async {
+        guard !isBusy, force || followsFinder else { return }
+        let request = UUID(), scope = scopeID, desktop = self.desktop
+        let home = FileManager.default.homeDirectoryForCurrentUser
+        followRequest = request
+        let found = await Task.detached { SortSelection.finderFolder(try? folder(), desktop: desktop, home: home) }.value
+        guard followRequest == request, scope == scopeID, !isBusy, force || followsFinder else { return }
+        if let found, found.isCategoryFolder(of: selection?.folder ?? desktop) { return }
+        if let found, found != selection { try? select(found, fromFinder: true) }
+        else if found == nil, selection != nil { selectDesktop() }
+        isFromFinder = found != nil
+        followsFinder = true
+        serviceError = nil
     }
 
     func load() async {

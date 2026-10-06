@@ -93,6 +93,16 @@ enum FinderBridge {
         return points
     }
 
+    static func insertionFolder() throws -> URL? {
+        let r = try run([
+            "with timeout of 3 seconds",
+            "tell application \"Finder\" to set folderAlias to (insertion location as alias)",
+            "end timeout",
+            "POSIX path of folderAlias"
+        ])
+        return r.out.isEmpty ? nil : URL(fileURLWithPath: r.out, isDirectory: true)
+    }
+
     // MARK: - Writing positions
 
     /// Detects whether `desktop position` or plain `position` works on this

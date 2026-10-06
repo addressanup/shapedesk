@@ -25,7 +25,7 @@
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSAppleEventsUsageDescription</key>
-	<string>ShapeDesk needs to control Finder to arrange your desktop icons into shapes.</string>
+	<string>ShapeDesk needs to control Finder to arrange your desktop icons into shapes and to find the folder you have open for AI Sort.</string>
 	<key>NSDesktopFolderUsageDescription</key>
 	<string>ShapeDesk sorts desktop files into category folders and restores them when you undo a sort.</string>
 	<key>NSDocumentsFolderUsageDescription</key>

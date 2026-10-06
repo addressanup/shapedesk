@@ -15,13 +15,16 @@ struct ShapeDeskApp: App {
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    private static let finder = "com.apple.finder"
     private let vm = ViewModel()
     private let sorting = SortingViewModel()
     private var menuBar: MenuBarPanel?
     private var sortWindow: NSWindow?
+    private var previousApp: String?
+    private var followPausedUntil: TimeInterval = 0
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        let openAI: () -> Void = { [weak self] in self?.showSortWindow() }
+        let openAI: () -> Void = { [weak self] in self?.openAISort() }
         menuBar = MenuBarPanel(symbolName: "square.grid.3x3.topleft.filled",
                                label: "ShapeDesk",
                                onOpen: { [vm] in vm.refresh() }) {
@@ -29,6 +32,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         NSApp.servicesProvider = self
         NSUpdateDynamicServices()
+        NSWorkspace.shared.notificationCenter.addObserver(self,
+            selector: #selector(applicationActivated(_:)),
+            name: NSWorkspace.didActivateApplicationNotification, object: nil)
+    }
+
+    private func openAISort() {
+        let front = NSWorkspace.shared.frontmostApplication
+        guard front?.processIdentifier != ProcessInfo.processInfo.processIdentifier else { return showSortWindow() }
+        menuBar?.close()
+        let finderInFront = front?.bundleIdentifier == Self.finder
+        Task {
+            await sorting.followFinder(force: true) { finderInFront ? try FinderBridge.insertionFolder() : nil }
+            showSortWindow()
+        }
+    }
+
+    @objc private func applicationActivated(_ notification: Notification) {
+        guard let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication else { return }
+        guard app.processIdentifier == ProcessInfo.processInfo.processIdentifier else { previousApp = app.bundleIdentifier; return }
+        guard previousApp == Self.finder, let window = sortWindow, window.isVisible, !window.isMiniaturized,
+              ProcessInfo.processInfo.systemUptime >= followPausedUntil else { return }
+        Task { await sorting.followFinder(force: false) { try FinderBridge.insertionFolder() } }
     }
 
     @objc func sortWithShapeDesk(_ pasteboard: NSPasteboard, userData: String?,
@@ -59,6 +84,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func showSortWindow() {
+        followPausedUntil = ProcessInfo.processInfo.systemUptime + 1
         menuBar?.close()
         if sortWindow == nil {
             let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 640, height: 760),
@@ -116,7 +142,7 @@ struct ContentView: View {
             } else {
                 VStack(alignment: .leading, spacing: 12) {
                     Label("A place for every file.", systemImage: "folder.badge.gearshape").font(.headline)
-                    Text("Sort your Desktop or files selected in Finder, with safe moves and undo.")
+                    Text("Sorts the folder open in Finder, or your Desktop, with safe moves and undo.")
                         .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                     if let usage = sorting.entitlement {
                         Text("\(usage.remaining.formatted()) AI checks remaining").font(.caption)

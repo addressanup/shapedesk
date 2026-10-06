@@ -65,7 +65,8 @@ struct AISortView: View {
                     .font(.system(size: 25)).foregroundStyle(deskTint).frame(width: 38)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(model.targetTitle).font(.headline).lineLimit(2)
-                    Text("Visible files only · Subfolders stay in place")
+                        .help(model.targetPath)
+                    Text(model.isFromFinder ? "From Finder · Visible files only · Subfolders stay in place" : "Visible files only · Subfolders stay in place")
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 Spacer()
@@ -149,7 +150,7 @@ struct AISortView: View {
                     Button("Get ShapeDesk Pro") { model.page = .account }
                         .buttonStyle(.borderedProminent).controlSize(.large)
                 } else {
-                    Button(model.isFinderSelection ? "Sort selection" : "Sort Desktop") { model.start(onFinish: onFinish) }
+                    Button(model.sortButtonTitle) { model.start(onFinish: onFinish) }
                         .buttonStyle(.borderedProminent).controlSize(.large)
                         .disabled(!model.maySort || model.isLoading || otherOperationRunning)
                 }

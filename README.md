@@ -61,18 +61,34 @@ or network connection. See the server README for deployment and verification sta
 
 ### Finder integration
 
+AI Sort follows Finder. With Finder in front, **Open AI Sort** in the menu
+bar targets the folder of the active Finder window. If the desktop has
+focus, no Finder window is open, or you were in another app, it targets the
+Desktop. While the AI Sort window is open, switching from Finder back to it
+checks Finder's active folder again, unless a sort or undo is running.
+Opening a category folder such as Docs inside the current target keeps that
+target, so its results and undo stay put. AI Sort follows visible folders in
+your home folder (in `~/Library`, only iCloud Drive and
+`~/Library/CloudStorage`) and on other drives. Hidden folders, app bundles,
+system folders such as `/Applications`, and views such as Recents fall back
+to the Desktop.
+
 Install `ShapeDesk.app` in `/Applications` or `~/Applications` and launch it.
 Select files from a single folder, or select one folder, then right-click and
 choose **Services → Sort with ShapeDesk** (also in Finder's **Finder → Services**
 menu). The app opens an AI Sort window showing the selected scope. Click **Sort
-selection** to begin. Selecting a folder considers only its immediate files.
-Selections spanning multiple folders, aliases, hidden items and app packages are
-rejected. File and folder identities are checked again before processing.
+selection** (or **Sort folder**) to begin. Selecting a folder considers only
+its immediate files. Selections spanning multiple folders, aliases, hidden
+items and app packages are rejected. File and folder identities are checked
+again before processing. Files or a folder you pick this way, or with
+**Change → Choose a folder…**, stay the target until you choose **Change →
+Desktop** or open AI Sort from the menu bar again.
 
 If the service is disabled, enable it in System Settings → Keyboard → Keyboard
 Shortcuts → Services → Files and Folders. Relaunch the installed app to refresh
-service registration. This uses the native macOS Services mechanism; it does not
-monitor every Finder folder or install a sync extension.
+service registration. Services use the native macOS mechanism. ShapeDesk asks
+Finder for its active folder only when AI Sort opens or you switch back to it;
+it does not monitor Finder folders or install a sync extension.
 
 Click **Sort Desktop** to start an automatic sorting pass. The app sends each
 file's name, extension, byte size, inferred content type/MIME type, creation
@@ -87,9 +103,10 @@ exactly `0.8`, lower confidence, malformed answers and processing errors all
 leave the file in place. The returned `confidence` is used directly, rather
 than the winning option's probability. Other files continue after a file fails.
 
-- Each pass scans only visible regular files directly in the chosen folder (Desktop by default). Directories,
-  packages, symbolic links and Finder aliases are excluded. Category directories
-  are created as needed and are never recursively scanned.
+- Each pass scans only visible regular files directly in the chosen folder
+  (the Desktop, unless AI Sort follows a Finder folder or you choose one).
+  Directories, packages, symbolic links and Finder aliases are excluded.
+  Category directories are created as needed and are never recursively scanned.
 - The panel updates scanned, moved and skipped totals, progress, and moved/skipped
   counts for each category. Skips without a classification appear as Unclassified.
   **Stop** cancels outstanding network work and leaves remaining files untouched.
@@ -119,8 +136,10 @@ check; there is no OS-wide mandatory lock against every writer. Cross-volume mov
 fail safely instead of falling back to copy-and-delete. Model accuracy depends on
 the metadata available; a confidence threshold does not guarantee a correct category.
 
-macOS may ask for access to the selected Desktop, Documents or Downloads folder. AI sorting uses filesystem access directly;
-the separate Finder Automation permission is for arranging icons into shapes.
+macOS may ask for access to the selected Desktop, Documents or Downloads
+folder. AI sorting moves files with filesystem access directly; the Finder
+Automation permission arranges icons into shapes and lets AI Sort ask Finder
+which folder is active. Without it, AI Sort targets the Desktop.
 
 ## Tests
 
@@ -135,8 +154,9 @@ shallow/hidden-file filtering, metadata changes, locks and open files, Unicode
 filenames, competing writers, journal failures, restart recovery, partial undo,
 and concurrent sorter instances. Tests never sort your actual desktop or require
 a TypeSafe key. Hosted-client tests cover credential boundaries, transport replay,
-quota denial and subscription-independent undo. Finder tests cover file selections,
-shallow folder scans and replacement identity checks. Run `npm --prefix server run
+quota denial and subscription-independent undo. Finder tests cover file
+selections, shallow folder scans, replacement identity checks and which
+Finder folders AI Sort follows. Run `npm --prefix server run
 test:postgres` for the backend's real-database concurrency and metering tests.
 Live model quality and checkout/account authentication require the deployed service
 and your configured provider accounts.

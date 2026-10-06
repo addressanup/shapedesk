@@ -3,7 +3,7 @@ import Darwin
 
 /// An explicit Finder selection: one folder, or files sharing one parent folder.
 /// Capture identities now so replacing a selection before Sort cannot widen its scope.
-public struct SortSelection: Sendable {
+public struct SortSelection: Sendable, Equatable {
     public let folder: URL
     public let fileNames: Set<String>?
     let folderIdentity: FileIdentity
@@ -46,6 +46,38 @@ public struct SortSelection: Sendable {
             folderIdentity: identity(folder),
             fileIdentities: Dictionary(files.map { ($0.0.lastPathComponent, $0.1) },
                                       uniquingKeysWith: { first, _ in first }))
+    }
+
+    public static func finderFolder(_ url: URL?, desktop: URL, home: URL) -> SortSelection? {
+        guard let url, let selection = try? resolve([url]), selection.fileNames == nil else { return nil }
+        if let desktopIdentity = try? identity(desktop.standardizedFileURL.resolvingSymlinksInPath()),
+           desktopIdentity == selection.folderIdentity { return nil }
+        let home = home.standardizedFileURL.resolvingSymlinksInPath()
+        let library = home.appendingPathComponent("Library")
+        let volumes = URL(fileURLWithPath: "/Volumes")
+        let path = selection.folder.pathComponents
+        let inside = { (root: URL) in path.starts(with: root.pathComponents) }
+        let root: URL
+        if let cloud = [library.appendingPathComponent("Mobile Documents"),
+                        library.appendingPathComponent("CloudStorage")].first(where: inside) {
+            root = cloud
+        } else if inside(home), !inside(library) {
+            root = home
+        } else if inside(volumes), path.count > volumes.pathComponents.count {
+            root = volumes
+        } else { return nil }
+        var folder = selection.folder
+        while folder.pathComponents.count > root.pathComponents.count {
+            guard let values = try? folder.resourceValues(forKeys: [.isHiddenKey, .isPackageKey]),
+                  values.isHidden == false, values.isPackage == false else { return nil }
+            folder.deleteLastPathComponent()
+        }
+        return selection
+    }
+
+    public func isCategoryFolder(of folder: URL) -> Bool {
+        fileNames == nil && FileCategory(rawValue: self.folder.lastPathComponent) != nil
+            && self.folder.deletingLastPathComponent().path == folder.standardizedFileURL.resolvingSymlinksInPath().path
     }
 
     private static func identity(_ url: URL) throws -> FileIdentity {
