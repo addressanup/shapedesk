@@ -113,7 +113,7 @@ struct ContentView: View {
                     SortPanelView(model: sorting, otherOperationRunning: vm.busy, onFinish: vm.refresh)
                         .padding(.vertical, 4)
                 }
-                .frame(minHeight: 320, idealHeight: 470, maxHeight: 560)
+                .frame(minHeight: 430, idealHeight: 540, maxHeight: 620)
                 .onAppear(perform: onSortTab)
             }
 

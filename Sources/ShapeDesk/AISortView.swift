@@ -40,6 +40,23 @@ struct AISortView: View {
     private var pad: CGFloat { compact ? 10 : 16 }
     private var countFont: Font { .system(size: compact ? 20 : 28, weight: .semibold) }
 
+    @ViewBuilder private var categoriesBlock: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(hasResults ? "This sort" : "Eight folders. Less searching.")
+                .font(.subheadline.weight(.semibold))
+            if hasResults { CategoryBreakdown(statistics: model.statistics) }
+            else {
+                LazyVGrid(columns: [GridItem(.flexible(), alignment: .leading), GridItem(.flexible(), alignment: .leading)],
+                          alignment: .leading, spacing: 12) {
+                    ForEach(FileCategory.allCases) { category in
+                        Label(category.rawValue, systemImage: category.symbol)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: gap) {
             HStack(alignment: .top) {
@@ -105,20 +122,7 @@ struct AISortView: View {
                 }
             }
 
-            VStack(alignment: .leading, spacing: 12) {
-                Text(hasResults ? "This sort" : "Eight folders. Less searching.")
-                    .font(.subheadline.weight(.semibold))
-                if hasResults { CategoryBreakdown(statistics: model.statistics) }
-                else {
-                    LazyVGrid(columns: [GridItem(.flexible(), alignment: .leading), GridItem(.flexible(), alignment: .leading)],
-                              alignment: .leading, spacing: 12) {
-                        ForEach(FileCategory.allCases) { category in
-                            Label(category.rawValue, systemImage: category.symbol)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                }
-            }
+            if !compact { categoriesBlock }
 
             VStack(alignment: .leading, spacing: 8) {
                 if hasResults || model.isUndoing {
@@ -154,6 +158,8 @@ struct AISortView: View {
                 Button("Undo last sort") { model.undo(onFinish: onFinish) }
                     .disabled(!model.canUndo || model.isBusy || otherOperationRunning)
             }
+
+            if compact { categoriesBlock }
 
             Divider()
             HStack(alignment: .top, spacing: 9) {
