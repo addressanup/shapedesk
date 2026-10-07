@@ -137,6 +137,7 @@ export function stripeBilling({ db, stripe, config, clock = () => new Date() }) 
     // Each purchase has its own secret. No email address or Stripe ID alone can activate a Mac.
     await q(`INSERT INTO subscriptions(license_id, kind, customer_id, subscription_id, status, valid_until, checked_at)
       VALUES ($1, 'stripe', $2, $3, $4, $5, $6) ON CONFLICT (license_id) DO UPDATE SET
+      kind = EXCLUDED.kind, customer_id = EXCLUDED.customer_id, subscription_id = EXCLUDED.subscription_id,
       status = EXCLUDED.status, valid_until = EXCLUDED.valid_until, checked_at = EXCLUDED.checked_at`,
     [identifier(session.customer), subscription.id, state.status, state.until, clock()]);
     await q('UPDATE checkout_attempts SET completed = true WHERE license_id = $1');

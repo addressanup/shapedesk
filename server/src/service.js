@@ -1,5 +1,6 @@
 import { createHmac } from 'node:crypto';
 import { fail } from './errors.js';
+import { couponPattern, normalizeCoupon } from './admin.js';
 
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const text = (v, max) => typeof v === 'string' && v.length <= max && !/[\x00-\x1f\x7f]/.test(v);
@@ -15,7 +16,7 @@ export function metadata(value) {
   return Object.fromEntries(keys.filter(k => value[k] != null).map(k => [k, value[k]]));
 }
 
-export function service({ db, upstream, config, billing, clock = () => new Date() }) {
+export function service({ db, upstream, config, billing, admin, clock = () => new Date() }) {
   const hash = (kind, value) => createHmac('sha256', config.hashKey).update(`${kind}:${value}`).digest('hex');
   const period = () => clock().toISOString().slice(0, 7) + '-01';
   function credentials(request) {
@@ -24,7 +25,7 @@ export function service({ db, upstream, config, billing, clock = () => new Date(
     if (!key || !uuid.test(instance ?? '')) fail(401, 'inactive');
     return { key, instance, id: hash('license', key) };
   }
-  async function usage(q, active = true, usagePeriod = period()) {
+  async function usage(q, active = true, usagePeriod = period(), licenseID = null) {
     // A killed invocation never leaves a permanent quota reservation. Same request ID stays terminal.
     const stale = await q(`UPDATE checks SET status = 'failed' WHERE license_id = $1 AND status = 'pending'
       AND created_at < now() - interval '90 seconds' RETURNING period`);
@@ -32,6 +33,8 @@ export function service({ db, upstream, config, billing, clock = () => new Date(
     const { rows } = await q('SELECT used FROM usage WHERE license_id = $1 AND period = $2', [usagePeriod]);
     const reset = new Date(usagePeriod + 'T00:00:00Z'); reset.setUTCMonth(reset.getUTCMonth() + 1);
     return { active, limit: config.limit, used: rows[0]?.used ?? 0, resetsAt: reset.toISOString(),
+      // The short account handle is safe to quote to support; it cannot authenticate anything.
+      ...(licenseID ? { account: licenseID.slice(0, 12) } : {}),
       ...(billing ? await billing.details(q) : {}) };
   }
   async function authorize(q, auth) {
@@ -55,8 +58,13 @@ export function service({ db, upstream, config, billing, clock = () => new Date(
       manageURL: 'https://app.lemonsqueezy.com/my-orders', monthlyLimit: config.limit };
     // Trusted Vercel forwarding header in production, socket address in the local runner.
     const ip = request.headers['x-vercel-forwarded-for'] || request.socket?.remoteAddress || 'unknown';
-    const bucket = path === '/v1/activate' ? ['activate:', 10] : path.startsWith('/v1/account') ? ['account:', 30] : ['', 180];
+    const bucket = path === '/v1/activate' ? ['activate:', 10] : path === '/v1/redeem' ? ['redeem:', 20]
+      : path.startsWith('/v1/account') ? ['account:', 30] : ['', 180];
     await db.rate(`ip:${bucket[0]}${hash('ip', ip)}`, bucket[1], 60);
+    if (path.startsWith('/v1/admin')) {
+      if (!admin) fail(404, 'not_found');
+      return admin(request);
+    }
     if (billing && method === 'POST' && ['/v1/checkout', '/v1/checkout/complete'].includes(path)) {
       const complete = path.endsWith('/complete');
       const result = await billing.checkout(request, complete);
@@ -66,6 +74,40 @@ export function service({ db, upstream, config, billing, clock = () => new Date(
           'x-shapedesk-instance': result.instanceID } });
       return { instanceID: result.instanceID, entitlement };
     }
+    if (method === 'POST' && path === '/v1/redeem') {
+      if (!billing) fail(503, 'coupon_unavailable');
+      const { licenseKey, code, deviceID } = request.body ?? {};
+      if (!/^sd_[0-9a-f]{64}$/.test(licenseKey ?? '') || !uuid.test(deviceID ?? '')) fail(400, 'invalid_request');
+      const couponCode = normalizeCoupon(code);
+      if (!couponPattern.test(couponCode)) fail(404, 'coupon_invalid');
+      const id = hash('license', licenseKey);
+      await db.rate(`redeem-code:${hash('coupon', couponCode)}`, 30, 60);
+      return db.withLicense(id, async q => {
+        // Every statement must reference $1 (the bound license) so its type stays inferable.
+        const coupon = (await q(`SELECT * FROM coupons WHERE code = $2 AND $1::text IS NOT NULL
+          FOR UPDATE`, [couponCode])).rows[0];
+        if (!coupon) fail(404, 'coupon_invalid');
+        if (!coupon.active) fail(410, 'coupon_revoked');
+        if (coupon.expires_at && new Date(coupon.expires_at) <= clock()) fail(410, 'coupon_expired');
+        if (coupon.redeemed >= coupon.max_redemptions) fail(410, 'coupon_exhausted');
+        if ((await q('SELECT 1 FROM coupon_redemptions WHERE coupon = $2 AND license_id = $1', [couponCode])).rowCount)
+          fail(409, 'already_redeemed');
+        const sub = (await q('SELECT * FROM subscriptions WHERE license_id = $1')).rows[0];
+        if (sub?.suspended) fail(403, 'account_suspended');
+        if (sub && sub.kind !== 'coupon') fail(409, 'already_subscribed');
+        // Stacked coupons always add to the later of today and the current expiry.
+        const base = sub && new Date(sub.valid_until) > clock() ? new Date(sub.valid_until) : clock();
+        const until = new Date(base.getTime() + coupon.grant_days * 86400000);
+        if (sub) await q(`UPDATE subscriptions SET status = 'active', valid_until = $2, checked_at = $3
+          WHERE license_id = $1`, [until, clock()]);
+        else await q(`INSERT INTO subscriptions(license_id, kind, status, valid_until, checked_at)
+          VALUES ($1, 'coupon', 'active', $2, $3)`, [until, clock()]);
+        await q('INSERT INTO coupon_redemptions(coupon, license_id, device_id) VALUES ($2, $1, $3)', [couponCode, deviceID]);
+        await q('UPDATE coupons SET redeemed = redeemed + 1 WHERE code = $2 AND $1::text IS NOT NULL', [couponCode]);
+        const activation = await billing.activate(q, { deviceID });
+        return { instanceID: activation.instanceID, entitlement: await usage(q, activation.active, period(), id) };
+      });
+    }
     if (method === 'POST' && path === '/v1/activate') {
       const { licenseKey, deviceID } = request.body ?? {};
       if (!text(licenseKey, 256) || !licenseKey || /\s/.test(licenseKey) || !uuid.test(deviceID ?? '')) fail(400, 'invalid_license');
@@ -73,7 +115,7 @@ export function service({ db, upstream, config, billing, clock = () => new Date(
       return db.withLicense(id, async q => {
         if (billing) {
           const result = await billing.activate(q, { key: licenseKey, deviceID, id });
-          return { instanceID: result.instanceID, entitlement: await usage(q, result.active) };
+          return { instanceID: result.instanceID, entitlement: await usage(q, result.active, period(), id) };
         }
         const { rows } = await q('SELECT * FROM devices WHERE license_id = $1 AND device_id = $2', [deviceID]);
         const existing = rows[0]?.active ? rows[0] : null;
@@ -91,7 +133,7 @@ export function service({ db, upstream, config, billing, clock = () => new Date(
           if (!existing) await upstream.license('deactivate', licenseKey, { instance_id: result.instance.id }).catch(() => {});
           throw error;
         }
-        return { instanceID: result.instance.id, entitlement: await usage(q) };
+        return { instanceID: result.instance.id, entitlement: await usage(q, true, period(), id) };
       });
     }
     if (method === 'POST' && path.startsWith('/v1/account')) {
@@ -102,7 +144,7 @@ export function service({ db, upstream, config, billing, clock = () => new Date(
       const id = hash('license', licenseKey);
       const deviceHandle = row => hash('device', row.instance_id).slice(0, 32);
       const summary = async q => {
-        const entitlement = await usage(q, await billing.access(q));
+        const entitlement = await usage(q, await billing.access(q), period(), id);
         const { rows } = await q(`SELECT instance_id, checked_at, last_seen_at FROM devices
           WHERE license_id = $1 AND active ORDER BY checked_at, instance_id`);
         return { ...entitlement, deviceLimit: config.deviceLimit, devices: rows.map(row => ({ id: deviceHandle(row),
@@ -141,8 +183,8 @@ export function service({ db, upstream, config, billing, clock = () => new Date(
     }
     if (method === 'GET' && path === '/v1/entitlement') {
       return db.withLicense(auth.id, async q => {
-        if (billing) return usage(q, await billing.authorize(q, auth, true));
-        await authorize(q, auth); return usage(q);
+        if (billing) return usage(q, await billing.authorize(q, auth, true), period(), auth.id);
+        await authorize(q, auth); return usage(q, true, period(), auth.id);
       });
     }
     if (method === 'POST' && path === '/v1/portal' && billing) {
@@ -156,7 +198,7 @@ export function service({ db, upstream, config, billing, clock = () => new Date(
     const reserved = await db.withLicense(auth.id, async q => {
       await authorize(q, auth);
       const reservationPeriod = period();
-      const entitlement = await usage(q, true, reservationPeriod);
+      const entitlement = await usage(q, true, reservationPeriod, auth.id);
       const { rows } = await q('SELECT * FROM checks WHERE license_id = $1 AND id = $2', [requestID]);
       if (rows[0]) {
         if (rows[0].metadata_hash !== fingerprint) fail(409, 'request_conflict');
@@ -177,13 +219,13 @@ export function service({ db, upstream, config, billing, clock = () => new Date(
         const { rowCount } = await q(`UPDATE checks SET status = 'complete', response = $3
           WHERE license_id = $1 AND id = $2 AND status = 'pending'`, [requestID, decision]);
         if (rowCount !== 1) fail(503, 'check_failed');
-        return { ...decision, entitlement: await usage(q) };
+        return { ...decision, entitlement: await usage(q, true, period(), auth.id) };
       });
     } catch {
       const recovered = await db.withLicense(auth.id, async q => {
         // A database COMMIT may succeed even if its acknowledgment was lost.
         const existing = await q('SELECT status, response FROM checks WHERE license_id = $1 AND id = $2', [requestID]);
-        if (existing.rows[0]?.status === 'complete') return { ...existing.rows[0].response, entitlement: await usage(q) };
+        if (existing.rows[0]?.status === 'complete') return { ...existing.rows[0].response, entitlement: await usage(q, true, period(), auth.id) };
         const { rows } = await q(`UPDATE checks SET status = 'failed' WHERE license_id = $1 AND id = $2
           AND status = 'pending' RETURNING period`, [requestID]);
         if (rows[0]) await q('UPDATE usage SET used = GREATEST(0, used - 1) WHERE license_id = $1 AND period = $2', [rows[0].period]);

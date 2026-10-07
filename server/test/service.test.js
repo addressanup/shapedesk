@@ -21,7 +21,7 @@ before(async () => {
 after(async () => { if (db) await db.close(); });
 beforeEach(async () => {
   if (!db) return;
-  await db.pool.query('TRUNCATE checks, usage, devices, subscriptions, checkout_attempts, billing_events, licenses, rate_limits');
+  await db.pool.query('TRUNCATE checks, usage, devices, subscriptions, checkout_attempts, billing_events, coupon_redemptions, coupons, admin_sessions, admin_audit, licenses, rate_limits');
   calls = { activate: 0, validate: 0, classify: 0, deactivate: 0 };
   invalid = false; failure = false; waitForAI = null; instant = new Date('2026-10-05T00:00:00Z');
   upstream = {

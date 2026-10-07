@@ -6,6 +6,7 @@ import { service } from './service.js';
 import { httpHandler } from './http.js';
 import { stripeBilling } from './stripe-billing.js';
 import { stripeWebhookHandler } from './stripe-webhook.js';
+import { adminService } from './admin.js';
 import { billingPage } from './billing-page.js';
 import { cors } from './cors.js';
 
@@ -20,7 +21,8 @@ export default async function dispatch(request, response) {
       const db = database(config.databaseURL);
       const stripe = config.stripeKey ? new Stripe(config.stripeKey, { apiVersion: '2025-02-24.acacia', timeout: 8000, maxNetworkRetries: 1 }) : null;
       const billing = stripeBilling({ config, db, stripe });
-      runtime = { db, config, cors: cors(config), handle: httpHandler(service({ config, db, billing, upstream: upstreams(config) })),
+      runtime = { db, config, cors: cors(config), handle: httpHandler(service({ config, db, billing,
+        admin: adminService({ db, config }), upstream: upstreams(config) })),
         webhook: stripeWebhookHandler({ stripe, secret: config.stripeWebhook, handle: billing.webhook }) };
     } catch {
       response.writeHead(503, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });

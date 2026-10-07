@@ -19,6 +19,8 @@ public struct ProEntitlement: Codable, Sendable {
     public let subscriptionStatus: String?
     public let renewsAt: Date?
     public let canManageBilling: Bool?
+    /// Short support handle derived from the license hash. It authenticates nothing.
+    public let account: String?
 }
 
 public struct ProPlan: Decodable, Sendable {
@@ -36,6 +38,10 @@ public struct ProPurchase: Codable, Sendable {
     public let licenseKey: String
     public let deviceID: String
     public var checkoutURL: URL?
+    public init(licenseKey: String, deviceID: String) {
+        self.licenseKey = licenseKey
+        self.deviceID = deviceID
+    }
     public init(deviceID: String) {
         self.deviceID = deviceID
         // SystemRandomNumberGenerator uses the platform's cryptographic generator.
@@ -52,6 +58,7 @@ public struct ProCheckout: Decodable, Sendable {
 public enum ProError: LocalizedError, Equatable {
     case unavailable, invalidResponse, invalidLicense, inactive, quota, rateLimited, pending, failedCheck
     case checkoutPending, checkoutExpired, checkoutUnavailable, deviceLimit, billingUnavailable
+    case invalidCoupon, couponExpired, couponExhausted, couponRedeemed, alreadySubscribed, accountSuspended
     public var errorDescription: String? {
         switch self {
         case .unavailable: return "ShapeDesk Pro is unavailable. Try again later. Your files stay in place."
@@ -67,6 +74,12 @@ public enum ProError: LocalizedError, Equatable {
         case .checkoutUnavailable: return "Subscriptions are not available yet. Existing access and undo still work."
         case .deviceLimit: return "This subscription has reached its Mac limit. Deactivate another Mac, then try again."
         case .billingUnavailable: return "This access does not have a paid subscription to manage."
+        case .invalidCoupon: return "That coupon code isn't valid. Check it and try again."
+        case .couponExpired: return "This coupon has expired."
+        case .couponExhausted: return "This coupon has already been fully claimed."
+        case .couponRedeemed: return "You've already redeemed this coupon on this account."
+        case .alreadySubscribed: return "This account already has Pro access."
+        case .accountSuspended: return "This account is suspended. Contact ShapeDesk support."
         }
     }
 }
@@ -136,6 +149,20 @@ public struct ProClient: Sendable {
         guard result.url.scheme == "https", result.url.host == "billing.stripe.com",
               result.url.user == nil, result.url.password == nil else { throw ProError.invalidResponse }
         return result.url
+    }
+
+    /// Creates (or extends) a free Pro grant on the purchase's own account secret.
+    /// The generated key becomes the user's recovery key, exactly like a checkout.
+    public func redeem(_ purchase: ProPurchase, code: String) async throws -> (ProCredentials, ProEntitlement) {
+        struct Body: Encodable { let licenseKey: String; let code: String; let deviceID: String }
+        struct Response: Decodable { let instanceID: String; let entitlement: ProEntitlement }
+        let trimmed = code.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, trimmed.count <= 64 else { throw ProError.invalidCoupon }
+        let result: Response = try await request("redeem",
+            body: Body(licenseKey: purchase.licenseKey, code: trimmed, deviceID: purchase.deviceID))
+        guard UUID(uuidString: result.instanceID) != nil else { throw ProError.invalidResponse }
+        try validate(result.entitlement)
+        return (ProCredentials(licenseKey: purchase.licenseKey, instanceID: result.instanceID), result.entitlement)
     }
 
     public func activate(licenseKey: String, deviceID: String) async throws -> (ProCredentials, ProEntitlement) {
@@ -239,7 +266,14 @@ public struct ProClient: Sendable {
             case "check_failed": error = .failedCheck
             case "checkout_pending": error = .checkoutPending
             case "checkout_expired": error = .checkoutExpired
-            case "checkout_unavailable", "already_subscribed": error = .checkoutUnavailable
+            case "checkout_unavailable": error = .checkoutUnavailable
+            case "already_subscribed": error = .alreadySubscribed
+            case "coupon_invalid", "coupon_revoked": error = .invalidCoupon
+            case "coupon_expired": error = .couponExpired
+            case "coupon_exhausted": error = .couponExhausted
+            case "already_redeemed": error = .couponRedeemed
+            case "account_suspended": error = .accountSuspended
+            case "coupon_unavailable": error = .unavailable
             case "device_limit": error = .deviceLimit
             case "billing_unavailable": error = .billingUnavailable
             default: error = .unavailable

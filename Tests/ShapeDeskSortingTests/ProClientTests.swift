@@ -118,6 +118,45 @@ final class ProClientTests: XCTestCase {
         XCTAssertEqual(restored.restored, 1)
     }
 
+    func testRedeemSendsPurchaseSecretAndDecodesEntitlement() async throws {
+        let purchase = ProPurchase(deviceID: "AAAAAAAA-0000-4000-8000-000000000002")
+        let couponUsage: [String: Any] = ["active": true, "limit": 1000, "used": 0,
+            "resetsAt": "2026-11-01T00:00:00.000Z", "account": "0f9308ef8c82",
+            "accessType": "coupon", "subscriptionStatus": "active",
+            "renewsAt": "2026-10-21T00:00:00.000Z", "canManageBilling": false]
+        let transport = ProTransport([try result(["instanceID": credentials.instanceID, "entitlement": couponUsage])])
+        let (fresh, entitlement) = try await client(transport).redeem(purchase, code: " beta-friends ")
+        XCTAssertEqual(fresh.licenseKey, purchase.licenseKey)
+        XCTAssertEqual(fresh.instanceID, credentials.instanceID)
+        XCTAssertEqual(entitlement.accessType, "coupon")
+        XCTAssertEqual(entitlement.account, "0f9308ef8c82")
+        XCTAssertEqual(entitlement.canManageBilling, false)
+        let sentRequests = await transport.requests
+        let request = try XCTUnwrap(sentRequests.first)
+        XCTAssertEqual(request.url?.absoluteString, "https://api.shapedesk.test/v1/redeem")
+        let body = try XCTUnwrap(JSONSerialization.jsonObject(with: XCTUnwrap(request.httpBody)) as? [String: Any])
+        XCTAssertEqual(body["licenseKey"] as? String, purchase.licenseKey)
+        XCTAssertEqual(body["code"] as? String, "beta-friends")
+        XCTAssertEqual(body["deviceID"] as? String, purchase.deviceID)
+    }
+
+    func testRedeemMapsCouponErrorsAndRejectsBlankCodes() async throws {
+        let purchase = ProPurchase(deviceID: UUID().uuidString)
+        for (code, expected) in [("coupon_invalid", ProError.invalidCoupon), ("coupon_revoked", .invalidCoupon),
+                                 ("coupon_expired", .couponExpired), ("coupon_exhausted", .couponExhausted),
+                                 ("already_redeemed", .couponRedeemed), ("already_subscribed", .alreadySubscribed),
+                                 ("account_suspended", .accountSuspended)] {
+            let transport = ProTransport([try result(["code": code], status: 409)])
+            do { _ = try await client(transport).redeem(purchase, code: "TEST"); XCTFail(code) }
+            catch { XCTAssertEqual(error as? ProError, expected, code) }
+        }
+        let transport = ProTransport([])
+        do { _ = try await client(transport).redeem(purchase, code: "   "); XCTFail() }
+        catch { XCTAssertEqual(error as? ProError, .invalidCoupon) }
+        let requestCount = await transport.requests.count
+        XCTAssertEqual(requestCount, 0)
+    }
+
     func testCheckoutUsesPersistentPurchaseProofAndValidatesStripeDestinations() async throws {
         let purchase = ProPurchase(deviceID: UUID().uuidString)
         XCTAssertEqual(purchase.licenseKey.count, 67)

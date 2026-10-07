@@ -15,7 +15,8 @@ const $ = (id) => document.getElementById(id);
 const els = {
   signin: $('view-signin'), account: $('view-account'), form: $('signin-form'),
   keyInput: $('key-input'), keyToggle: $('key-toggle'), signinBtn: $('signin-btn'),
-  title: $('acct-title'), sub: $('acct-sub'), remaining: $('acct-remaining'),
+  title: $('acct-title'), sub: $('acct-sub'), idNote: $('acct-idnote'), accountId: $('acct-id'),
+  remaining: $('acct-remaining'),
   used: $('acct-used'), meter: $('acct-meter'), reset: $('acct-reset'),
   manage: $('manage-billing'), billingNote: $('billing-note'),
   macsCount: $('macs-count'), macList: $('mac-list'), macsEmpty: $('macs-empty'),
@@ -85,6 +86,11 @@ function lastSeen(iso) {
 // Rendering -------------------------------------------------------------------
 
 function titleFor(s) {
+  if (s.accessType === 'coupon') {
+    return s.active
+      ? ['Pro active', `Free access through ${localDate(s.renewsAt)}. Redeem more coupons in the app to add days.`]
+      : ['Coupon ended', 'Redeem another coupon or subscribe to turn AI Sort back on.'];
+  }
   if (s.accessType === 'owner') {
     return s.active
       ? ['Owner access', `Includes AI Sort until ${localDate(s.renewsAt)}.`]
@@ -106,6 +112,8 @@ function renderSummary() {
   const [title, sub] = titleFor(s);
   els.title.textContent = title;
   els.sub.textContent = sub;
+  els.idNote.hidden = !s.account;
+  if (s.account) els.accountId.textContent = s.account;
 
   const remaining = Math.max(0, s.limit - s.used);
   els.remaining.textContent = new Intl.NumberFormat().format(remaining);
@@ -118,7 +126,9 @@ function renderSummary() {
     ? 'Opens Stripe in a new tab for invoices, payment method or canceling.'
     : s.accessType === 'owner'
       ? "There's no billing to manage for owner access."
-      : '';
+      : s.accessType === 'coupon'
+        ? "There's no billing to manage for coupon access."
+        : '';
 
   els.macsCount.textContent = `${s.devices.length} of ${s.deviceLimit} in use`;
   els.macsEmpty.hidden = s.devices.length !== 0;

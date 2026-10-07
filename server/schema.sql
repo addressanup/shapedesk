@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS rate_limits (
 );
 CREATE TABLE IF NOT EXISTS subscriptions (
   license_id text PRIMARY KEY REFERENCES licenses(id),
-  kind text NOT NULL CHECK (kind IN ('stripe', 'owner')),
+  kind text NOT NULL CHECK (kind IN ('stripe', 'owner', 'coupon')),
   customer_id text UNIQUE,
   subscription_id text UNIQUE,
   status text NOT NULL,
@@ -59,3 +59,41 @@ CREATE TABLE IF NOT EXISTS billing_events (
   processed_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE devices ADD COLUMN IF NOT EXISTS last_seen_at timestamptz;
+ALTER TABLE subscriptions DROP CONSTRAINT IF EXISTS subscriptions_kind_check;
+ALTER TABLE subscriptions ADD CONSTRAINT subscriptions_kind_check
+  CHECK (kind IN ('stripe', 'owner', 'coupon'));
+
+CREATE TABLE IF NOT EXISTS coupons (
+  code text PRIMARY KEY,
+  grant_days integer NOT NULL CHECK (grant_days BETWEEN 1 AND 3650),
+  max_redemptions integer NOT NULL CHECK (max_redemptions BETWEEN 1 AND 100000),
+  redeemed integer NOT NULL DEFAULT 0 CHECK (redeemed >= 0),
+  active boolean NOT NULL DEFAULT true,
+  note text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  expires_at timestamptz,
+  CHECK (redeemed <= max_redemptions)
+);
+CREATE TABLE IF NOT EXISTS coupon_redemptions (
+  coupon text NOT NULL REFERENCES coupons(code),
+  license_id text NOT NULL REFERENCES licenses(id),
+  device_id uuid NOT NULL,
+  redeemed_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (coupon, license_id)
+);
+CREATE INDEX IF NOT EXISTS coupon_redemptions_license_idx ON coupon_redemptions (license_id);
+
+CREATE TABLE IF NOT EXISTS admin_sessions (
+  token text PRIMARY KEY,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  last_used_at timestamptz NOT NULL DEFAULT now(),
+  expires_at timestamptz NOT NULL
+);
+CREATE INDEX IF NOT EXISTS admin_sessions_expiry_idx ON admin_sessions (expires_at);
+CREATE TABLE IF NOT EXISTS admin_audit (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  at timestamptz NOT NULL DEFAULT now(),
+  action text NOT NULL,
+  target text NOT NULL DEFAULT '',
+  detail jsonb NOT NULL DEFAULT '{}'
+);
