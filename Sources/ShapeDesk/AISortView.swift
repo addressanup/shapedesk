@@ -3,38 +3,29 @@ import ShapeDeskSorting
 
 private let deskTint = Color(red: 0.20, green: 0.48, blue: 0.37)
 
-struct AISortWorkspace: View {
+/// AI Sort as it lives inside the menu bar dropdown: the sort page, or the
+/// Pro account page with a way back to sorting.
+struct SortPanelView: View {
     @ObservedObject var model: SortingViewModel
-    @ObservedObject var vm: ViewModel
+    let otherOperationRunning: Bool
+    let onFinish: @MainActor () -> Void
+
     var body: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 12) {
-                Image(systemName: "square.grid.3x3.topleft.filled")
-                    .font(.title2).foregroundStyle(deskTint)
-                Text("ShapeDesk").font(.headline)
-                Spacer()
-                Picker("Workspace", selection: $model.page) {
-                    ForEach(SortingViewModel.Page.allCases, id: \.self) { Text($0.rawValue).tag($0) }
-                }
-                .pickerStyle(.segmented).labelsHidden().frame(width: 210)
-            }
-            .padding(.horizontal, 24).padding(.vertical, 16)
-            Divider()
-            ScrollView {
-                Group {
-                    if model.page == .sort {
-                        AISortView(model: model, otherOperationRunning: vm.busy, onFinish: vm.refresh)
-                    } else {
-                        ProAccountView(model: model)
+        if model.page == .account {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack {
+                    Button { model.page = .sort } label: {
+                        Label("AI Sort", systemImage: "chevron.left").font(.callout.weight(.medium))
                     }
+                    .buttonStyle(.borderless)
+                    Spacer()
                 }
-                .padding(28).frame(maxWidth: 740, alignment: .leading)
-                .frame(maxWidth: .infinity)
+                ProAccountView(model: model, compact: true)
             }
+        } else {
+            AISortView(model: model, otherOperationRunning: otherOperationRunning,
+                       onFinish: onFinish, compact: true)
         }
-        .background(Color(nsColor: .windowBackgroundColor))
-        .tint(deskTint)
-        .task { await model.load() }
     }
 }
 
@@ -42,15 +33,21 @@ struct AISortView: View {
     @ObservedObject var model: SortingViewModel
     let otherOperationRunning: Bool
     let onFinish: @MainActor () -> Void
+    var compact = false
     private var hasResults: Bool { model.statistics.phase != .idle }
+    private var gap: CGFloat { compact ? 14 : 22 }
+    private var heroFont: Font { compact ? .title3.weight(.semibold) : .system(size: 27, weight: .semibold) }
+    private var pad: CGFloat { compact ? 10 : 16 }
+    private var countFont: Font { .system(size: compact ? 20 : 28, weight: .semibold) }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 22) {
+        VStack(alignment: .leading, spacing: gap) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("A place for every file.").font(.system(size: 27, weight: .semibold)).tracking(-0.7)
+                    Text("A place for every file.").font(heroFont).tracking(-0.7)
                     Text("Let AI take care of the little piles.")
                         .foregroundStyle(.secondary)
+                        .font(compact ? .callout : .body)
                 }
                 Spacer(minLength: 12)
                 Button { model.page = .account } label: {
@@ -62,7 +59,7 @@ struct AISortView: View {
 
             HStack(spacing: 12) {
                 Image(systemName: model.isFinderSelection ? "folder.fill" : "desktopcomputer")
-                    .font(.system(size: 25)).foregroundStyle(deskTint).frame(width: 38)
+                    .font(.system(size: compact ? 19 : 25)).foregroundStyle(deskTint).frame(width: compact ? 28 : 38)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(model.targetTitle).font(.headline).lineLimit(2)
                         .help(model.targetPath)
@@ -75,7 +72,7 @@ struct AISortView: View {
                         .disabled(model.isBusy || otherOperationRunning)
                 }
             }
-            .padding(16)
+            .padding(pad)
             .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 12))
 
             if let error = model.serviceError {
@@ -85,11 +82,11 @@ struct AISortView: View {
 
             if hasResults {
                 HStack(spacing: 0) {
-                    SortCount(label: "Scanned", count: model.statistics.totalScanned)
+                    SortCount(label: "Scanned", count: model.statistics.totalScanned, countFont: countFont)
                     Spacer()
-                    SortCount(label: "Moved", count: model.statistics.moved)
+                    SortCount(label: "Moved", count: model.statistics.moved, countFont: countFont)
                     Spacer()
-                    SortCount(label: "Kept in place", count: model.statistics.skipped)
+                    SortCount(label: "Kept in place", count: model.statistics.skipped, countFont: countFont)
                 }
                 .accessibilityElement(children: .combine)
             }
@@ -144,13 +141,13 @@ struct AISortView: View {
 
             HStack(spacing: 12) {
                 if model.isBusy {
-                    Button("Stop sorting") { model.stop() }.controlSize(.large)
+                    Button("Stop sorting") { model.stop() }.controlSize(compact ? .regular : .large)
                 } else if !model.hasLicense && !model.isOwnerPreview && !model.maySort {
                     Button("Get ShapeDesk Pro") { model.page = .account }
-                        .buttonStyle(.borderedProminent).controlSize(.large)
+                        .buttonStyle(.borderedProminent).controlSize(compact ? .regular : .large)
                 } else {
                     Button(model.sortButtonTitle) { model.start(onFinish: onFinish) }
-                        .buttonStyle(.borderedProminent).controlSize(.large)
+                        .buttonStyle(.borderedProminent).controlSize(compact ? .regular : .large)
                         .disabled(!model.maySort || model.isLoading || otherOperationRunning)
                 }
                 Spacer()
@@ -180,12 +177,14 @@ struct AISortView: View {
 
 struct ProAccountView: View {
     @ObservedObject var model: SortingViewModel
+    var compact = false
     @State private var showRestore = false
+    private var gap: CGFloat { compact ? 14 : 22 }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 22) {
+        VStack(alignment: .leading, spacing: gap) {
             VStack(alignment: .leading, spacing: 6) {
-                Text("A calmer desktop, included.").font(.system(size: 27, weight: .semibold)).tracking(-0.7)
+                Text("A calmer desktop, included.").font(compact ? .title3.weight(.semibold) : .system(size: 27, weight: .semibold)).tracking(-0.7)
                 Text("ShapeDesk Pro").font(.subheadline).foregroundStyle(.secondary)
             }
             if model.isOwnerPreview {
@@ -199,7 +198,7 @@ struct ProAccountView: View {
                 }
             } else {
                 HStack(alignment: .firstTextBaseline, spacing: 5) {
-                    Text(model.plan?.price ?? "$5").font(.system(size: 42, weight: .semibold)).tracking(-1.3)
+                    Text(model.plan?.price ?? "$5").font(.system(size: compact ? 30 : 42, weight: .semibold)).tracking(-1.3)
                     Text("/ month").foregroundStyle(.secondary)
                     Spacer()
                     if model.plan?.billingMode == "test" { Text("Test checkout").font(.caption).foregroundStyle(.secondary) }
@@ -215,7 +214,7 @@ struct ProAccountView: View {
             if let usage = model.entitlement {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack(alignment: .firstTextBaseline) {
-                        Text(usage.remaining, format: .number).font(.system(size: 32, weight: .semibold)).monospacedDigit()
+                        Text(usage.remaining, format: .number).font(.system(size: compact ? 24 : 32, weight: .semibold)).monospacedDigit()
                         Text("checks remaining").foregroundStyle(.secondary)
                         Spacer()
                         Text("\(usage.used.formatted()) / \(usage.limit.formatted()) used").font(.caption).foregroundStyle(.secondary)
@@ -225,7 +224,7 @@ struct ProAccountView: View {
                     Text("Resets \(usage.resetsAt, format: .dateTime.month(.wide).day()) · UTC calendar month")
                         .font(.caption).foregroundStyle(.secondary)
                 }
-                .padding(18).background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 12))
+                .padding(compact ? 14 : 18).background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 12))
             }
 
             if model.pendingPurchase != nil && !model.hasLicense {
@@ -242,7 +241,7 @@ struct ProAccountView: View {
             } else if !model.hasLicense && !model.isOwnerPreview {
                 VStack(alignment: .leading, spacing: 9) {
                     Button("Subscribe with Stripe") { model.subscribe() }
-                        .buttonStyle(.borderedProminent).controlSize(.large)
+                        .buttonStyle(.borderedProminent).controlSize(compact ? .regular : .large)
                         .disabled(model.plan?.checkoutEnabled != true || model.isLoading || model.isBusy)
                     Text(model.plan?.checkoutEnabled == true ? "Secure checkout opens in your browser. Cancel future renewals anytime." : "Checkout is being prepared. Refresh to check availability.")
                         .font(.caption).foregroundStyle(.secondary)
@@ -318,9 +317,10 @@ private struct ProBenefit: View {
 private struct SortCount: View {
     let label: String
     let count: Int
+    var countFont: Font = .system(size: 28, weight: .semibold)
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(count, format: .number).font(.system(size: 28, weight: .semibold)).monospacedDigit()
+            Text(count, format: .number).font(countFont).monospacedDigit()
             Text(label).font(.caption).foregroundStyle(.secondary)
         }
     }

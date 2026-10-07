@@ -1,8 +1,11 @@
 import SwiftUI
 import AppKit
 
+enum PanelTab: String, CaseIterable { case shapes = "Shapes", sort = "AI Sort" }
+
 @MainActor
 final class ViewModel: ObservableObject {
+    @Published var panelTab: PanelTab = .shapes
     @Published var iconCount = 0
     @Published var status = "Click a shape to arrange your desktop."
     @Published var customText = "HELLO"
