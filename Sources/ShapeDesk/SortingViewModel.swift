@@ -25,6 +25,7 @@ final class SortingViewModel: ObservableObject {
     @Published var page: Page = .sort
     @Published private(set) var pendingPurchase: ProPurchase?
     @Published private(set) var serviceError: String?
+    @Published private(set) var needsReactivation = false
 
     enum Page: String, CaseIterable { case sort = "AI Sort", account = "Account" }
 
@@ -286,12 +287,38 @@ final class SortingViewModel: ObservableObject {
                 self.credentials = credentials
                 entitlement = usage
                 hasLicense = true
+                needsReactivation = false
                 licenseDraft = ""
                 settingsMessage = accountMessage
                 showSettings = false
             } catch { settingsMessage = error.localizedDescription }
             finishLoading()
         }
+    }
+
+    /// Re-registers this Mac with its saved recovery key after it was
+    /// deactivated elsewhere, e.g. from the account page.
+    func reactivate() {
+        guard !isOwnerPreview, !isBusy, !isLoading, let client, let credentials else { return }
+        isLoading = true
+        Task {
+            do {
+                let (fresh, usage) = try await client.activate(licenseKey: credentials.licenseKey, deviceID: deviceID)
+                let store = self.store
+                try await Task.detached { try store.save(fresh) }.value
+                self.credentials = fresh
+                entitlement = usage
+                hasLicense = true
+                needsReactivation = false
+                settingsMessage = accountMessage
+            } catch { settingsMessage = error.localizedDescription }
+            finishLoading()
+        }
+    }
+
+    func openAccountPage() {
+        guard let url = URL(string: "https://shapedesk.space/account") else { return }
+        NSWorkspace.shared.open(url)
     }
 
     func deactivate() {
@@ -305,6 +332,7 @@ final class SortingViewModel: ObservableObject {
                 self.credentials = nil
                 entitlement = nil
                 hasLicense = false
+                needsReactivation = false
                 settingsMessage = "This Mac is deactivated. Your subscription and undo history are unchanged."
             } catch { settingsMessage = error.localizedDescription }
             finishLoading()
@@ -396,10 +424,14 @@ final class SortingViewModel: ObservableObject {
         }
         do {
             entitlement = try await client.entitlement(credentials)
+            needsReactivation = false
             settingsMessage = accountMessage
         } catch {
             entitlement = nil
-            settingsMessage = error.localizedDescription
+            needsReactivation = (error as? ProError) == .inactive
+            settingsMessage = needsReactivation
+                ? "This Mac isn't active on your subscription. It may have been deactivated from your account page."
+                : error.localizedDescription
         }
         #endif
     }

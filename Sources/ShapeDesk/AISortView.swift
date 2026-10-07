@@ -250,6 +250,16 @@ struct ProAccountView: View {
             }
 
             if model.hasLicense {
+                if model.needsReactivation {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("This Mac isn't active").font(.headline)
+                        Text("It may have been deactivated from your account page. Activate it again to keep using AI Sort here.")
+                            .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                        Button("Activate this Mac again") { model.reactivate() }
+                            .buttonStyle(.borderedProminent)
+                            .disabled(model.isBusy || model.isLoading)
+                    }
+                }
                 HStack {
                     if model.entitlement?.canManageBilling == true {
                         Button("Manage billing") { model.manageBilling() }.buttonStyle(.borderedProminent)
@@ -261,6 +271,8 @@ struct ProAccountView: View {
                 .disabled(model.isBusy || model.isLoading)
                 Text("Save your recovery key to activate Pro on another Mac. Deactivating a Mac frees its slot and keeps your subscription.")
                     .font(.caption).foregroundStyle(.secondary)
+                Button("Manage Macs and billing at shapedesk.space/account") { model.openAccountPage() }
+                    .buttonStyle(.link).font(.caption)
             }
 
             HStack(alignment: .top) {

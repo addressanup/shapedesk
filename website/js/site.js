@@ -1,4 +1,5 @@
 import { initDesktop } from './desktop.js';
+import { initProPlan, initSortDesk } from './sortdesk.js';
 import { densePolyline, fit, resample } from './geometry.js';
 import { analyzeText } from './text-shape.js';
 
@@ -141,6 +142,8 @@ function wireDownloadNotice() {
 
 startClock();
 initDesktop();
+initSortDesk();
+initProPlan();
 drawHeartFigure();
 drawWordFigure();
 wireCopyButtons();

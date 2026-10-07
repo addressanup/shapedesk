@@ -7,6 +7,7 @@ import { httpHandler } from './http.js';
 import { stripeBilling } from './stripe-billing.js';
 import { stripeWebhookHandler } from './stripe-webhook.js';
 import { billingPage } from './billing-page.js';
+import { cors } from './cors.js';
 
 let runtime;
 export default async function dispatch(request, response) {
@@ -19,7 +20,7 @@ export default async function dispatch(request, response) {
       const db = database(config.databaseURL);
       const stripe = config.stripeKey ? new Stripe(config.stripeKey, { apiVersion: '2025-02-24.acacia', timeout: 8000, maxNetworkRetries: 1 }) : null;
       const billing = stripeBilling({ config, db, stripe });
-      runtime = { db, config, handle: httpHandler(service({ config, db, billing, upstream: upstreams(config) })),
+      runtime = { db, config, cors: cors(config), handle: httpHandler(service({ config, db, billing, upstream: upstreams(config) })),
         webhook: stripeWebhookHandler({ stripe, secret: config.stripeWebhook, handle: billing.webhook }) };
     } catch {
       response.writeHead(503, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
@@ -28,6 +29,7 @@ export default async function dispatch(request, response) {
     }
   }
   const path = new URL(request.url, runtime.config.origin).pathname;
+  if (runtime.cors(request, response, path)) return;
   if (path === '/v1/webhooks/stripe') return runtime.webhook(request, response);
   if (request.method === 'GET' && ['/checkout/success', '/checkout/cancel', '/billing/return'].includes(path)) {
     return billingPage(path, response, runtime.config.stripeLive);

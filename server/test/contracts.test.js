@@ -6,6 +6,7 @@ import { metadata } from '../src/service.js';
 import { upstreams, criteria, model } from '../src/upstreams.js';
 import { httpHandler } from '../src/http.js';
 import { configuration } from '../src/config.js';
+import { cors } from '../src/cors.js';
 
 const config = { store: 42, variant: 7, jevKey: 'server-key' };
 const file = { name: 'report.pdf', fileExtension: 'pdf', byteSize: 100, createdAt: '2026-10-01T00:00:00Z', modifiedAt: '2026-10-01T00:00:00Z' };
@@ -84,4 +85,44 @@ test('missing Stripe configuration, mixed modes and unsafe service URLs fail clo
   const withoutBilling = { ...env, STRIPE_SECRET_KEY: undefined, STRIPE_PRICE_ID: undefined };
   assert.equal(configuration(withoutBilling).checkoutEnabled, false);
   assert.throws(() => configuration({ ...withoutBilling, CHECKOUT_ENABLED: 'true' }));
+});
+
+test('WEB_ORIGIN must be a bare HTTPS origin, with loopback HTTP only in test mode', () => {
+  const env = { DATABASE_URL: 'postgres://localhost/test', TYPESAFE_API_KEY: 'secret', IDENTITY_HASH_KEY: 'x'.repeat(64),
+    STRIPE_SECRET_KEY: 'sk_test_fake', STRIPE_PRICE_ID: 'price_test', STRIPE_MODE: 'test', SERVICE_ORIGIN: 'https://api.shapedesk.test' };
+  assert.equal(configuration(env).webOrigin, 'https://shapedesk.space');
+  assert.throws(() => configuration({ ...env, WEB_ORIGIN: 'http://evil.test' }));
+  assert.throws(() => configuration({ ...env, WEB_ORIGIN: 'https://shapedesk.space/account' }));
+  assert.equal(configuration({ ...env, WEB_ORIGIN: 'http://localhost:8000' }).webOrigin, 'http://localhost:8000');
+  const live = { ...env, STRIPE_MODE: 'live', STRIPE_SECRET_KEY: undefined, STRIPE_PRICE_ID: undefined };
+  assert.throws(() => configuration({ ...live, WEB_ORIGIN: 'http://localhost:8000' }));
+});
+
+test('web CORS answers only the configured origin on account routes', () => {
+  const check = cors({ webOrigin: 'https://shapedesk.test' });
+  const fake = () => {
+    const headers = {};
+    return { headers, setHeader: (name, value) => { headers[name] = value; },
+      writeHead(status, extra = {}) { headers[':status'] = status; Object.assign(headers, extra); },
+      end() {} };
+  };
+  let r = fake();
+  assert.equal(check({ method: 'GET', headers: { origin: 'https://shapedesk.test' } }, r, '/v1/plans'), false);
+  assert.equal(r.headers['Access-Control-Allow-Origin'], 'https://shapedesk.test');
+  assert.equal(r.headers['Vary'], 'Origin');
+  r = fake();
+  assert.equal(check({ method: 'GET', headers: { origin: 'https://evil.test' } }, r, '/v1/plans'), false);
+  assert.equal(r.headers['Vary'], 'Origin');
+  assert.equal(r.headers['Access-Control-Allow-Origin'], undefined);
+  r = fake();
+  assert.equal(check({ method: 'OPTIONS', headers: { origin: 'https://shapedesk.test' } }, r, '/v1/account'), true);
+  assert.equal(r.headers[':status'], 204);
+  assert.equal(r.headers['Access-Control-Allow-Methods'], 'GET, POST');
+  assert.equal(r.headers['Access-Control-Allow-Headers'], 'Content-Type');
+  r = fake();
+  assert.equal(check({ method: 'OPTIONS', headers: { origin: 'https://evil.test' } }, r, '/v1/account'), true);
+  assert.equal(r.headers[':status'], 403);
+  r = fake();
+  assert.equal(check({ method: 'GET', headers: { origin: 'https://shapedesk.test' } }, r, '/v1/classify'), false);
+  assert.deepEqual(r.headers, {});
 });
