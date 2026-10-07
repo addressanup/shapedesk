@@ -22,6 +22,7 @@ final class SortingViewModel: ObservableObject {
     @Published private(set) var settingsMessage = "Activate ShapeDesk Pro to use AI Sort."
     @Published var showSettings = false
     @Published var licenseDraft = ""
+    @Published var couponDraft = ""
     @Published var page: Page = .sort
     @Published private(set) var pendingPurchase: ProPurchase?
     @Published private(set) var serviceError: String?
@@ -52,6 +53,9 @@ final class SortingViewModel: ObservableObject {
     }
 
     var maySort: Bool { entitlement?.active == true && (entitlement?.remaining ?? 0) > 0 }
+    /// A purchase only counts as a checkout once Stripe gave it a session URL.
+    /// A leftover secret from a failed coupon redeem is not a pending checkout.
+    var hasPendingCheckout: Bool { pendingPurchase?.checkoutURL != nil }
     var targetTitle: String { isFinderSelection ? targetDescription : "Desktop" }
     var targetPath: String {
         ((selection?.folder ?? desktop).path as NSString).abbreviatingWithTildeInPath
@@ -63,6 +67,7 @@ final class SortingViewModel: ObservableObject {
     var accountTitle: String {
         if entitlement?.accessType == "owner" { return "Owner access" }
         if entitlement?.active == true { return "Pro active" }
+        if entitlement?.accessType == "coupon" { return "Coupon ended" }
         switch entitlement?.subscriptionStatus {
         case "past_due", "unpaid": return "Payment needed"
         case "canceled", "incomplete_expired": return "Subscription ended"
@@ -73,7 +78,15 @@ final class SortingViewModel: ObservableObject {
     }
     private var accountMessage: String {
         guard let entitlement else { return ProError.inactive.localizedDescription }
-        if entitlement.active { return "ShapeDesk Pro is active on this Mac." }
+        if entitlement.active {
+            if entitlement.accessType == "coupon", let until = entitlement.renewsAt {
+                return "Coupon access is active until \(until.formatted(date: .abbreviated, time: .omitted)). Redeem another coupon to add more days."
+            }
+            return "ShapeDesk Pro is active on this Mac."
+        }
+        if entitlement.accessType == "coupon" {
+            return "Your coupon access has ended. Redeem another coupon or subscribe to keep using AI Sort."
+        }
         switch entitlement.subscriptionStatus {
         case "past_due", "unpaid": return "Update your payment method in Manage billing, then refresh to restore AI Sort. Undo is always available."
         case "canceled", "incomplete_expired": return "This subscription has ended. Manage billing shows your invoices. To subscribe again, deactivate this Mac and start a new checkout. Your undo history is kept."
@@ -245,7 +258,7 @@ final class SortingViewModel: ObservableObject {
     func returnFromBilling() {
         page = .account
         guard !isLoading else { billingReturnPending = true; return }
-        if pendingPurchase != nil { finishCheckout() } else { refreshSubscription() }
+        if hasPendingCheckout { finishCheckout() } else { refreshSubscription() }
     }
 
     private func finishLoading() {
@@ -271,6 +284,39 @@ final class SortingViewModel: ObservableObject {
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(credentials.licenseKey, forType: .string)
         settingsMessage = "Recovery key copied. Keep it somewhere private to activate another Mac."
+    }
+
+    /// Redeems a coupon on this Mac's account. With no license yet the generated
+    /// key is persisted before the request exactly like a checkout, so a crash
+    /// cannot orphan the account it creates. On a coupon account it stacks days
+    /// onto the same account; Stripe and owner accounts are refused by the API.
+    func redeemCoupon() {
+        guard !isOwnerPreview, !isBusy, !isLoading, let client else { return }
+        let code = couponDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !code.isEmpty else { return }
+        isLoading = true
+        Task {
+            do {
+                let purchase = credentials.map { ProPurchase(licenseKey: $0.licenseKey, deviceID: deviceID) }
+                    ?? pendingPurchase ?? ProPurchase(deviceID: deviceID)
+                if credentials == nil, pendingPurchase == nil {
+                    let purchaseStore = self.purchaseStore
+                    try await Task.detached { try purchaseStore.savePurchase(purchase) }.value
+                    pendingPurchase = purchase
+                }
+                let (fresh, usage) = try await client.redeem(purchase, code: code)
+                let store = self.store
+                try await Task.detached { try store.save(fresh) }.value
+                self.credentials = fresh
+                entitlement = usage
+                hasLicense = true
+                needsReactivation = false
+                couponDraft = ""
+                await clearPendingPurchase()
+                settingsMessage = "Coupon applied — ShapeDesk Pro is on. Save your recovery key below for another Mac."
+            } catch { settingsMessage = error.localizedDescription }
+            finishLoading()
+        }
     }
 
     func activate() {
@@ -417,9 +463,9 @@ final class SortingViewModel: ObservableObject {
             return
         }
         guard let credentials else {
-            settingsMessage = pendingPurchase == nil
-                ? "AI access is included. Subscribe once, then sort from ShapeDesk or Finder."
-                : ProError.checkoutPending.localizedDescription
+            settingsMessage = hasPendingCheckout
+                ? ProError.checkoutPending.localizedDescription
+                : "AI access is included. Subscribe once, then sort from ShapeDesk or Finder."
             return
         }
         do {

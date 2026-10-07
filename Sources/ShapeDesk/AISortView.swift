@@ -185,7 +185,26 @@ struct ProAccountView: View {
     @ObservedObject var model: SortingViewModel
     var compact = false
     @State private var showRestore = false
+    @State private var showCoupon = false
     private var gap: CGFloat { compact ? 14 : 22 }
+    private var couponTitle: String {
+        model.entitlement?.accessType == "coupon" ? "Redeem another coupon" : "Have a coupon?"
+    }
+
+    @ViewBuilder private var couponSection: some View {
+        DisclosureGroup(couponTitle, isExpanded: $showCoupon) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Coupon code").font(.caption.weight(.medium))
+                TextField("e.g. SD-XXXX-XXXX-XXXX", text: $model.couponDraft)
+                    .textFieldStyle(.roundedBorder)
+                    .onSubmit { model.redeemCoupon() }
+                    .accessibilityLabel("Coupon code")
+                Button("Redeem for Pro") { model.redeemCoupon() }
+                    .disabled(model.couponDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                              || model.isLoading || model.isBusy)
+            }.padding(.top, 10)
+        }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: gap) {
@@ -233,7 +252,7 @@ struct ProAccountView: View {
                 .padding(compact ? 14 : 18).background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 12))
             }
 
-            if model.pendingPurchase != nil && !model.hasLicense {
+            if model.hasPendingCheckout && !model.hasLicense {
                 VStack(alignment: .leading, spacing: 10) {
                     Text("Finish activating Pro").font(.headline)
                     Text("Your checkout is saved on this Mac. Complete payment in your browser, then come back here.")
@@ -276,6 +295,11 @@ struct ProAccountView: View {
                 .disabled(model.isBusy || model.isLoading)
                 Text("Save your recovery key to activate Pro on another Mac. Deactivating a Mac frees its slot and keeps your subscription.")
                     .font(.caption).foregroundStyle(.secondary)
+                if let account = model.entitlement?.account {
+                    Text("Account \(account) — quote this ID if you contact support.")
+                        .font(.caption).foregroundStyle(.secondary).textSelection(.enabled)
+                }
+                if model.entitlement?.accessType == "coupon" { couponSection }
                 Button("Manage Macs and billing at shapedesk.space/account") { model.openAccountPage() }
                     .buttonStyle(.link).font(.caption)
             }
@@ -286,12 +310,12 @@ struct ProAccountView: View {
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer()
                 Button("Refresh") {
-                    if model.pendingPurchase != nil { model.finishCheckout() } else { model.refreshSubscription() }
+                    if model.hasPendingCheckout { model.finishCheckout() } else { model.refreshSubscription() }
                 }
                 .disabled(model.isBusy || model.isLoading)
             }
 
-            if !model.hasLicense && model.pendingPurchase == nil && !model.isOwnerPreview {
+            if !model.hasLicense && !model.hasPendingCheckout && !model.isOwnerPreview {
                 DisclosureGroup("Already subscribed? Restore access", isExpanded: $showRestore) {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("ShapeDesk recovery key").font(.caption.weight(.medium))
@@ -302,6 +326,7 @@ struct ProAccountView: View {
                             .disabled(model.licenseDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || model.isLoading || model.isBusy)
                     }.padding(.top, 10)
                 }
+                couponSection
             }
             Divider()
             Text("Each completed AI classification uses one check, including files kept in place. Failed AI requests use no checks. Unused checks don’t roll over. Desktop shapes and undo remain free.")

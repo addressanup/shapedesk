@@ -22,7 +22,7 @@ before(async () => {
 after(async () => { if (db) await db.close(); });
 beforeEach(async () => {
   if (!db) return;
-  await db.pool.query('TRUNCATE checks, usage, devices, subscriptions, checkout_attempts, billing_events, licenses, rate_limits');
+  await db.pool.query('TRUNCATE checks, usage, devices, subscriptions, checkout_attempts, billing_events, coupon_redemptions, coupons, admin_sessions, admin_audit, licenses, rate_limits');
   instant = new Date('2026-10-05T00:00:00Z'); creates = 0; aiCalls = 0;
   config = { hashKey: 'x'.repeat(64), stripePrice: 'price_shape', limit: 3, deviceLimit: 2,
     stripeLive: false, checkoutEnabled: true, origin: 'https://api.shapedesk.test', webOrigin: 'https://shapedesk.test' };

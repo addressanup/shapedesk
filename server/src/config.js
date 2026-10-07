@@ -22,7 +22,15 @@ export function configuration(env = process.env) {
       (checkoutEnabled && (!hasBilling || !env.STRIPE_WEBHOOK_SECRET?.startsWith('whsec_') || !env.STRIPE_PORTAL_CONFIGURATION_ID?.startsWith('bpc_')))) {
     throw new Error('Invalid server configuration');
   }
-  return { databaseURL: env.DATABASE_URL, jevKey: env.TYPESAFE_API_KEY,
+  // The superadmin is optional. Both variables together enable it; either alone is a mistake.
+  const adminUser = env.ADMIN_USERNAME?.trim() || null;
+  const adminPassword = env.ADMIN_PASSWORD_HASH?.trim() || null;
+  if ((adminUser || adminPassword) &&
+      (!/^[A-Za-z0-9_.@-]{3,64}$/.test(adminUser ?? '') ||
+       !/^scrypt:\d+:\d+:\d+:[0-9a-f]{32,64}:[0-9a-f]{64,256}$/.test(adminPassword ?? ''))) {
+    throw new Error('Invalid server configuration');
+  }
+  return { databaseURL: env.DATABASE_URL, jevKey: env.TYPESAFE_API_KEY, adminUser, adminPassword,
     hashKey: env.IDENTITY_HASH_KEY, limit, deviceLimit, origin: origin.origin, webOrigin: web.origin,
     stripeKey: env.STRIPE_SECRET_KEY, stripePrice: env.STRIPE_PRICE_ID,
     stripeWebhook: env.STRIPE_WEBHOOK_SECRET, stripePortal: env.STRIPE_PORTAL_CONFIGURATION_ID,

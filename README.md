@@ -59,8 +59,10 @@ AI Sort is bundled into the app and uses a vendor-managed Jev integration.
 Customers subscribe to **ShapeDesk Pro for $5 USD/month**, including **1,000 AI
 checks per UTC calendar month**, shared across up to **3 Macs**. Subscribe from
 Account, complete Stripe Checkout, and return to the app to activate. A recovery
-key in Account restores access on another Mac. Customers never supply a TypeSafe
-API key. Customer credentials stay in macOS Keychain; the Jev key stays on the backend.
+key in Account restores access on another Mac, and the same page redeems
+**coupon codes** for free Pro days — coupons stack onto existing coupon access
+and need no Stripe billing. Customers never supply a TypeSafe API key. Customer
+credentials stay in macOS Keychain; the Jev key stays on the backend.
 
 The paid service implementation and setup are in [server/README.md](server/README.md).
 The service runs at `https://api.shapedesk.space`, with a separate Stripe test

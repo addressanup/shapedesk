@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Superadmin · ShapeDesk</title>
+  <meta name="robots" content="noindex">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#110d1e">
+  <meta name="color-scheme" content="dark">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/fonts/gabarito.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/martian-mono.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/site.css">
+  <script type="module" src="/js/admin.js"></script>
+</head>
+<body>
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="em-grid" viewBox="0 0 16 16">
+        <g fill="#3e9c78">
+          <rect x="1" y="1" width="6.2" height="6.2" rx="1.6"/>
+          <rect x="1" y="8.8" width="6.2" height="6.2" rx="1.6"/>
+          <rect x="8.8" y="8.8" width="6.2" height="6.2" rx="1.6"/>
+        </g>
+      </symbol>
+    </defs>
+  </svg>
+
+  <main class="accountdesk">
+    <div class="accountwin accountwin--admin">
+      <div class="aiwin__toolbar" aria-hidden="true">
+        <svg class="aiwin__glyph" viewBox="0 0 16 16"><use href="#em-grid"/></svg>
+        <span class="aiwin__app">ShapeDesk</span>
+        <span class="aiwin__seg"><span class="is-on">Superadmin</span></span>
+      </div>
+      <div class="accountwin__body">
+
+        <section id="view-login" class="acct-block">
+          <h1>Superadmin</h1>
+          <p class="acct-sub">Operator access only. Every action here is audited.</p>
+          <form id="login-form" class="acct-block" method="post">
+            <div class="acct-field">
+              <label for="admin-user">Username</label>
+              <div class="acct-keyrow">
+                <input id="admin-user" type="text" autocomplete="username" spellcheck="false">
+              </div>
+            </div>
+            <div class="acct-field">
+              <label for="admin-pass">Password</label>
+              <div class="acct-keyrow">
+                <input id="admin-pass" type="password" autocomplete="current-password">
+              </div>
+            </div>
+            <div>
+              <button class="btn btn--primary" id="login-btn" type="submit">Sign in</button>
+            </div>
+          </form>
+          <p class="acct-note">Sessions last 12 hours and live only in this tab.</p>
+        </section>
+
+        <section id="view-dash" hidden>
+          <div class="adm-top">
+            <h1>Superadmin</h1>
+            <span class="adm-session" id="adm-session"></span>
+            <button class="btn" id="logout" type="button">Sign out</button>
+          </div>
+          <nav class="adm-tabs" aria-label="Sections">
+            <button class="adm-tab is-on" data-tab="overview" type="button">Overview</button>
+            <button class="adm-tab" data-tab="coupons" type="button">Coupons</button>
+            <button class="adm-tab" data-tab="accounts" type="button">Accounts</button>
+            <button class="adm-tab" data-tab="audit" type="button">Audit</button>
+          </nav>
+
+          <div id="tab-overview" class="acct-block">
+            <div class="adm-stats" id="stats"></div>
+            <p class="acct-note">Counts are live from the API database. “Live” means usable access right now.</p>
+          </div>
+
+          <div id="tab-coupons" class="acct-block" hidden>
+            <form id="coupon-form" class="adm-form" method="post">
+              <div class="acct-field">
+                <label for="c-code">Code <span class="adm-optional">optional — generated if empty</span></label>
+                <div class="acct-keyrow"><input id="c-code" type="text" spellcheck="false" placeholder="e.g. LAUNCH-2026"></div>
+              </div>
+              <div class="acct-field">
+                <label for="c-days">Pro days</label>
+                <div class="acct-keyrow"><input id="c-days" type="number" min="1" max="3650" value="30" required></div>
+              </div>
+              <div class="acct-field">
+                <label for="c-max">Max uses</label>
+                <div class="acct-keyrow"><input id="c-max" type="number" min="1" max="100000" value="1" required></div>
+              </div>
+              <div class="acct-field">
+                <label for="c-exp">Expires <span class="adm-optional">optional</span></label>
+                <div class="acct-keyrow"><input id="c-exp" type="date"></div>
+              </div>
+              <div class="acct-field adm-form__wide">
+                <label for="c-note">Note <span class="adm-optional">optional, internal</span></label>
+                <div class="acct-keyrow"><input id="c-note" type="text" maxlength="200" placeholder="Who is this for?"></div>
+              </div>
+              <div class="adm-form__wide">
+                <button class="btn btn--primary" id="coupon-create" type="submit">Create coupon</button>
+                <span class="adm-created" id="coupon-created" hidden></span>
+              </div>
+            </form>
+            <div class="adm-table-wrap">
+              <table class="adm-table" id="coupon-table">
+                <thead><tr><th>Code</th><th>Days</th><th>Used</th><th>Status</th><th>Expires</th><th>Note</th><th></th></tr></thead>
+                <tbody id="coupon-rows"></tbody>
+              </table>
+            </div>
+            <p class="acct-note" id="coupons-empty" hidden>No coupons yet.</p>
+          </div>
+
+          <div id="tab-accounts" class="acct-block" hidden>
+            <div class="acct-keyrow">
+              <input id="acct-q" type="text" spellcheck="false" placeholder="Filter by account ID prefix">
+              <button class="btn" id="acct-search" type="button">Search</button>
+            </div>
+            <div class="adm-table-wrap">
+              <table class="adm-table" id="account-table">
+                <thead><tr><th>Account</th><th>Access</th><th>State</th><th>Macs</th><th>Used</th><th>Valid until</th><th>Last seen</th></tr></thead>
+                <tbody id="account-rows"></tbody>
+              </table>
+            </div>
+            <button class="btn" id="accounts-more" type="button" hidden>Load more</button>
+            <p class="acct-note" id="accounts-empty" hidden>No accounts match.</p>
+            <div id="account-detail" class="adm-detail" hidden></div>
+          </div>
+
+          <div id="tab-audit" class="acct-block" hidden>
+            <div class="adm-table-wrap">
+              <table class="adm-table" id="audit-table">
+                <thead><tr><th>When</th><th>Action</th><th>Target</th><th>Detail</th></tr></thead>
+                <tbody id="audit-rows"></tbody>
+              </table>
+            </div>
+            <p class="acct-note" id="audit-empty" hidden>No audited actions yet.</p>
+          </div>
+        </section>
+
+        <p class="acct-note-line" id="adm-note" role="status" hidden></p>
+        <p class="acct-alert" id="adm-alert" role="alert" hidden></p>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
