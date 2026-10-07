@@ -140,9 +140,11 @@ struct PanelPlacement {
     }
 
     func frame(for size: NSSize) -> NSRect {
-        NSRect(x: max(bounds.minX, min(left, bounds.maxX - size.width)),
-               y: max(bounds.minY, top - size.height),
-               width: size.width, height: size.height)
+        let width = min(size.width, bounds.width)
+        let height = min(size.height, bounds.height)
+        return NSRect(x: max(bounds.minX, min(left, bounds.maxX - width)),
+                      y: max(bounds.minY, top - height),
+                      width: width, height: height)
     }
 
     private static func distance(_ point: NSPoint, _ rect: NSRect) -> CGFloat {

@@ -19,41 +19,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let vm = ViewModel()
     private let sorting = SortingViewModel()
     private var menuBar: MenuBarPanel?
-    private var sortWindow: NSWindow?
-    private var previousApp: String?
-    private var followPausedUntil: TimeInterval = 0
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        let openAI: () -> Void = { [weak self] in self?.openAISort() }
         menuBar = MenuBarPanel(symbolName: "square.grid.3x3.topleft.filled",
                                label: "ShapeDesk",
-                               onOpen: { [vm] in vm.refresh() }) {
-            ContentView(openAI: openAI).environmentObject(vm).environmentObject(sorting)
+                               onOpen: { [vm, self] in
+                                   vm.refresh()
+                                   if vm.panelTab == .sort { refreshSortTarget() }
+                               }) {
+            ContentView(onSortTab: { [weak self] in self?.refreshSortTarget() })
+                .environmentObject(vm).environmentObject(sorting)
         }
         NSApp.servicesProvider = self
         NSUpdateDynamicServices()
-        NSWorkspace.shared.notificationCenter.addObserver(self,
-            selector: #selector(applicationActivated(_:)),
-            name: NSWorkspace.didActivateApplicationNotification, object: nil)
     }
 
-    private func openAISort() {
-        let front = NSWorkspace.shared.frontmostApplication
-        guard front?.processIdentifier != ProcessInfo.processInfo.processIdentifier else { return showSortWindow() }
-        menuBar?.close()
-        let finderInFront = front?.bundleIdentifier == Self.finder
-        Task {
-            await sorting.followFinder(force: true) { finderInFront ? try FinderBridge.insertionFolder() : nil }
-            showSortWindow()
-        }
+    /// The dropdown's AI Sort tab can act as its own Finder-follow entry point:
+    /// read the folder open in the frontmost Finder window. Force is off, so a
+    /// target chosen through Services is never overridden here.
+    private func refreshSortTarget() {
+        let finderInFront = NSWorkspace.shared.frontmostApplication?.bundleIdentifier == Self.finder
+        Task { await sorting.followFinder(force: false) { finderInFront ? try FinderBridge.insertionFolder() : nil } }
     }
 
-    @objc private func applicationActivated(_ notification: Notification) {
-        guard let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication else { return }
-        guard app.processIdentifier == ProcessInfo.processInfo.processIdentifier else { previousApp = app.bundleIdentifier; return }
-        guard previousApp == Self.finder, let window = sortWindow, window.isVisible, !window.isMiniaturized,
-              ProcessInfo.processInfo.systemUptime >= followPausedUntil else { return }
-        Task { await sorting.followFinder(force: false) { try FinderBridge.insertionFolder() } }
+    private func presentSort() {
+        vm.panelTab = .sort
+        menuBar?.open()
     }
 
     @objc func sortWithShapeDesk(_ pasteboard: NSPasteboard, userData: String?,
@@ -63,43 +54,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             let urls = pasteboard.readObjects(forClasses: [NSURL.self],
                 options: [.urlReadingFileURLsOnly: true]) as? [URL] ?? []
             try sorting.select(SortSelection.resolve(urls))
-            showSortWindow()
+            presentSort()
         } catch {
             errorPointer.pointee = error.localizedDescription as NSString
             sorting.reportSelectionError(error)
-            showSortWindow()
+            presentSort()
         }
     }
 
     func application(_ application: NSApplication, open urls: [URL]) {
         let scheme = Bundle.main.bundleIdentifier == "com.shapedesk.staging" ? "shapedesk-test" : "shapedesk"
         guard urls.contains(where: { $0.scheme == scheme && $0.host == "billing" && $0.path == "/return" }) else { return }
-        showSortWindow()
+        presentSort()
         sorting.returnFromBilling()
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        showSortWindow()
+        presentSort()
         return true
-    }
-
-    private func showSortWindow() {
-        followPausedUntil = ProcessInfo.processInfo.systemUptime + 1
-        menuBar?.close()
-        if sortWindow == nil {
-            let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 640, height: 760),
-                                  styleMask: [.titled, .closable, .miniaturizable, .resizable],
-                                  backing: .buffered, defer: false)
-            let name = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "ShapeDesk"
-            window.title = "\(name) — AI Sort"
-            window.isReleasedWhenClosed = false
-            window.contentMinSize = NSSize(width: 560, height: 540)
-            window.contentView = NSHostingView(rootView: AISortWorkspace(model: sorting, vm: vm))
-            window.center()
-            sortWindow = window
-        }
-        NSApp.activate(ignoringOtherApps: true)
-        sortWindow?.makeKeyAndOrderFront(nil)
     }
 
     private enum FinderServiceError: LocalizedError {
@@ -109,12 +81,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 }
 
 struct ContentView: View {
-    let openAI: () -> Void
+    let onSortTab: () -> Void
     @EnvironmentObject private var vm: ViewModel
     @EnvironmentObject private var sorting: SortingViewModel
-    @State private var selectedTab = Tab.shapes
-
-    private enum Tab: String, CaseIterable { case shapes = "Shapes", sort = "AI Sort" }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -132,29 +101,25 @@ struct ContentView: View {
                 .disabled(vm.busy || sorting.isBusy)
             }
 
-            Picker("Mode", selection: $selectedTab) {
-                ForEach(Tab.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+            Picker("Mode", selection: $vm.panelTab) {
+                ForEach(PanelTab.allCases, id: \.self) { Text($0.rawValue).tag($0) }
             }
             .pickerStyle(.segmented)
 
-            if selectedTab == .shapes {
+            if vm.panelTab == .shapes {
                 ShapeControls().disabled(sorting.isBusy)
             } else {
-                VStack(alignment: .leading, spacing: 12) {
-                    Label("A place for every file.", systemImage: "folder.badge.gearshape").font(.headline)
-                    Text("Sorts the folder open in Finder, or your Desktop, with safe moves and undo.")
-                        .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-                    if let usage = sorting.entitlement {
-                        Text("\(usage.remaining.formatted()) AI checks remaining").font(.caption)
-                    }
-                    Button("Open AI Sort") { openAI() }.buttonStyle(.borderedProminent)
+                ScrollView {
+                    SortPanelView(model: sorting, otherOperationRunning: vm.busy, onFinish: vm.refresh)
+                        .padding(.vertical, 4)
                 }
-                .padding(.vertical, 10)
+                .frame(minHeight: 320, idealHeight: 470, maxHeight: 560)
+                .onAppear(perform: onSortTab)
             }
 
             Divider()
             HStack {
-                if selectedTab == .shapes {
+                if vm.panelTab == .shapes {
                     Button("Reset to grid") { vm.reset() }
                         .disabled(vm.busy || sorting.isBusy)
                         .help("Re-arrange icons into Finder's plain sorted grid")
@@ -165,7 +130,8 @@ struct ContentView: View {
             }
         }
         .padding(14)
-        .frame(width: 320)
+        .frame(width: 360)
+        .task { await sorting.load() }
     }
 }
 
