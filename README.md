@@ -8,10 +8,10 @@ undo every sort.
 
 <p align="center">
   <a href="docs/demo.mp4">
-    <img src="docs/demo.webp" width="100%" alt="Real desktop folder icons arranging into a heart, a circle, a star and the word HELLO, then AI Sort filing loose files into category folders and undo putting them back">
+    <img src="docs/demo.webp" width="100%" alt="Real desktop folder icons arranging into shapes and the word HELLO, then AI Sort filing loose files into category folders, on the desktop and from Finder's right-click menu, with undo putting everything back">
   </a>
 </p>
-<p align="center"><a href="docs/demo.mp4"><b>▶ Watch the 39-second demo with sound</b></a></p>
+<p align="center"><a href="docs/demo.mp4"><b>▶ Watch the 96-second demo with sound</b></a></p>
 
 **Website and download:** [shapedesk.space](https://shapedesk.space)
 
