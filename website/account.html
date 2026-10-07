@@ -17,6 +17,13 @@
 <body>
   <svg class="sprite" aria-hidden="true" focusable="false">
     <defs>
+      <symbol id="em-grid" viewBox="0 0 16 16">
+        <g fill="#3e9c78">
+          <rect x="1" y="1" width="6.2" height="6.2" rx="1.6"/>
+          <rect x="1" y="8.8" width="6.2" height="6.2" rx="1.6"/>
+          <rect x="8.8" y="8.8" width="6.2" height="6.2" rx="1.6"/>
+        </g>
+      </symbol>
       <symbol id="cup" viewBox="0 0 16 16">
         <path fill="currentColor" d="M2.2 6.2h9.2v3.9a4 4 0 0 1-4 4H6.2a4 4 0 0 1-4-4z"/>
         <path fill="none" stroke="currentColor" stroke-width="1.4" d="M11.4 7.4h.9a1.9 1.9 0 0 1 0 3.8h-1.1"/>
@@ -41,9 +48,10 @@
 
   <main class="accountdesk">
     <div class="accountwin">
-      <div class="aiwin__bar" aria-hidden="true">
-        <span class="aiwin__lights"><i></i><i></i><i></i></span>
-        <span class="aiwin__title">ShapeDesk — Account</span>
+      <div class="aiwin__toolbar" aria-hidden="true">
+        <svg class="aiwin__glyph" viewBox="0 0 16 16"><use href="#em-grid"/></svg>
+        <span class="aiwin__app">ShapeDesk</span>
+        <span class="aiwin__seg"><span class="is-on">Account</span></span>
       </div>
       <div class="accountwin__body">
 
@@ -65,7 +73,7 @@
           </form>
           <details class="acct-help">
             <summary>Where's my key?</summary>
-            <p>In ShapeDesk, open AI Sort, choose Account, then Copy recovery key.</p>
+            <p>In ShapeDesk's menu bar dropdown, open AI Sort → Account, then Copy recovery key.</p>
             <div class="acct-help__mock" aria-hidden="true">
               <span class="mock__btn">Manage billing</span>
               <span class="mock__btn mock__btn--focus">Copy recovery key</span>

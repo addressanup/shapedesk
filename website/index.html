@@ -294,7 +294,7 @@
       <figure class="video__frame">
         <video controls playsinline preload="none" poster="/media/demo-poster.jpg" width="1280" height="720">
           <source src="/media/demo.mp4" type="video/mp4">
-          <a href="/media/demo.mp4">Download the demo video (MP4, 7 MB)</a>
+          <a href="/media/demo.mp4">Download the demo video (MP4, 6 MB)</a>
         </video>
         <figcaption class="meta">1:36 · with sound</figcaption>
       </figure>
@@ -348,25 +348,25 @@
       </div>
 
       <div class="sortdesk" id="sortdesk">
+        <div class="sortdesk__bar" aria-hidden="true">
+          <span class="sortdesk__menulet"><svg viewBox="0 0 16 16"><use href="#em-grid"/></svg>ShapeDesk</span>
+          <span class="sortdesk__clock">Tue 9:41 AM</span>
+        </div>
         <div class="sortdesk__field" id="sortdesk-field">
           <div class="sortdesk__icons" id="sortdesk-icons" aria-hidden="true"></div>
         </div>
 
-        <div class="aiwin" aria-label="Pretend copy of the ShapeDesk AI Sort window">
-          <div class="aiwin__bar" aria-hidden="true">
-            <span class="aiwin__lights"><i></i><i></i><i></i></span>
-            <span class="aiwin__title">ShapeDesk — AI Sort</span>
-          </div>
+        <div class="aiwin" aria-label="Pretend copy of the AI Sort page inside ShapeDesk's menu bar dropdown">
           <div class="aiwin__toolbar">
             <svg class="aiwin__glyph" viewBox="0 0 16 16" aria-hidden="true"><use href="#em-grid"/></svg>
             <span class="aiwin__app">ShapeDesk</span>
-            <span class="aiwin__seg"><span class="is-on">AI Sort</span><a href="#pro">Account</a></span>
+            <span class="aiwin__seg"><a href="#how">Shapes</a><span class="is-on">AI Sort</span></span>
           </div>
           <div class="aiwin__body">
             <div class="aiwin__intro">
               <p class="aiwin__h">A place for every file.</p>
               <p class="aiwin__sub">Let AI take care of the little piles.</p>
-              <span class="aiwin__pill"><svg viewBox="0 0 12 12" aria-hidden="true"><path fill="currentColor" d="M6 .8a5.2 5.2 0 1 1 0 10.4A5.2 5.2 0 0 1 6 .8z"/><path fill="none" stroke="#221d2e" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" d="m3.6 6.1 1.6 1.7 3.2-3.5"/></svg>Pro active</span>
+              <a class="aiwin__pill" href="#pro"><svg viewBox="0 0 12 12" aria-hidden="true"><path fill="currentColor" d="M6 .8a5.2 5.2 0 1 1 0 10.4A5.2 5.2 0 0 1 6 .8z"/><path fill="none" stroke="#221d2e" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" d="m3.6 6.1 1.6 1.7 3.2-3.5"/></svg>Pro active</a>
             </div>
 
             <div class="aiwin__target">
@@ -486,11 +486,7 @@ Undo ↩ restored 16 of 16</code></pre>
         <p>Shapes, words and undo stay free. Pro adds AI Sort.</p>
       </div>
       <div class="pro__grid">
-        <div class="plancard" aria-label="Pretend copy of the app's Account view">
-          <div class="aiwin__bar" aria-hidden="true">
-            <span class="aiwin__lights"><i></i><i></i><i></i></span>
-            <span class="aiwin__title">ShapeDesk — AI Sort</span>
-          </div>
+        <div class="plancard" aria-label="Pretend copy of the Account page inside ShapeDesk's menu bar dropdown">
           <div class="aiwin__toolbar">
             <svg class="aiwin__glyph" viewBox="0 0 16 16" aria-hidden="true"><use href="#em-grid"/></svg>
             <span class="aiwin__app">ShapeDesk</span>
@@ -518,7 +514,7 @@ Undo ↩ restored 16 of 16</code></pre>
         <div class="pro__items">
           <article class="pro__item">
             <h3>Subscribe in ShapeDesk</h3>
-            <p>Open AI Sort, choose Account, then Subscribe with Stripe. Checkout opens in your browser, and ShapeDesk activates when you come back.</p>
+            <p>Open the menu bar dropdown, go to AI Sort → Account, then Subscribe with Stripe. Checkout opens in your browser, and ShapeDesk activates when you come back.</p>
           </article>
           <article class="pro__item">
             <h3>Add your other Macs</h3>

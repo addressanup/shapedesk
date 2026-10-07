@@ -72,11 +72,11 @@ or network connection. See the server README for deployment and verification sta
 
 ### Finder integration
 
-AI Sort follows Finder. With Finder in front, **Open AI Sort** in the menu
-bar targets the folder of the active Finder window. If the desktop has
-focus, no Finder window is open, or you were in another app, it targets the
-Desktop. While the AI Sort window is open, switching from Finder back to it
-checks Finder's active folder again, unless a sort or undo is running.
+AI Sort follows Finder. With Finder in front, opening the menu bar dropdown
+on its **AI Sort** tab targets the folder of the active Finder window. If
+the desktop has focus, no Finder window is open, or you were in another
+app, it targets the Desktop. The check runs each time the AI Sort page
+opens, unless a sort or undo is running.
 Opening a category folder such as Docs inside the current target keeps that
 target, so its results and undo stay put. AI Sort follows visible folders in
 your home folder (in `~/Library`, only iCloud Drive and
@@ -88,18 +88,18 @@ to the Desktop. To sort the Desktop instead of a folder, click
 Install `ShapeDesk.app` in `/Applications` or `~/Applications` and launch it.
 Select files from a single folder, or select one folder, then right-click and
 choose **Services → Sort with ShapeDesk** (also in Finder's **Finder → Services**
-menu). The app opens an AI Sort window showing the selected scope. Click **Sort
-selection** (or **Sort folder**) to begin. Selecting a folder considers only
+menu). The app opens the menu bar dropdown on the AI Sort page, showing the
+selected scope. Click **Sort selection** (or **Sort folder**) to begin.
+Selecting a folder considers only
 its immediate files. Selections spanning multiple folders, aliases, hidden
 items and app packages are rejected. File and folder identities are checked
 again before processing. Files or a folder you pick this way stay the
-target until you click **Use Desktop** or open AI Sort from the menu bar
-again.
+target until you click **Use Desktop**.
 
 If the service is disabled, enable it in System Settings → Keyboard → Keyboard
 Shortcuts → Services → Files and Folders. Relaunch the installed app to refresh
 service registration. Services use the native macOS mechanism. ShapeDesk asks
-Finder for its active folder only when AI Sort opens or you switch back to it;
+Finder for its active folder only when the AI Sort page opens;
 it does not monitor Finder folders or install a sync extension.
 
 Click **Sort Desktop** to start an automatic sorting pass. The app sends each

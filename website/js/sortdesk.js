@@ -1,6 +1,6 @@
 // Pretend AI Sort: a second desktop of loose files plus a replica of the app's
-// "ShapeDesk — AI Sort" window (AISortView.swift). Everything happens in-page;
-// the files, scores and check counts are all pretend.
+// menu-bar dropdown on its AI Sort page (AISortView.swift). Everything happens
+// in-page; the files, scores and check counts are all pretend.
 
 const CATEGORIES = ['Screenshots', 'Recordings', 'Videos', 'Audio', 'Images', 'Docs', 'Code', 'Other'];
 const EMBLEM = {
@@ -93,7 +93,7 @@ export function initSortDesk() {
   const layer = document.getElementById('sortdesk-icons');
   if (!field || !layer) return;
 
-  const win = layer.closest('.sortdesk').querySelector('.aiwin');
+  const panel = layer.closest('.sortdesk').querySelector('.aiwin');
   const runBtn = document.getElementById('sort-run');
   const stopBtn = document.getElementById('sort-stop');
   const undoBtn = document.getElementById('sort-undo');
@@ -147,7 +147,7 @@ export function initSortDesk() {
   // Layout -------------------------------------------------------------------
 
   function layout() {
-    // Wide = the window overlays the field; below 1240px it stacks underneath.
+    // Wide = the dropdown overlays the field; below 1240px it stacks underneath.
     const wide = !matchMedia('(max-width: 1240px)').matches;
     const fieldW = field.clientWidth;
     const fieldH = field.clientHeight;
@@ -156,8 +156,9 @@ export function initSortDesk() {
     const slotW = labelsHidden ? 74 : 96;
     const slotH = labelsHidden ? 66 : 96;
 
-    // Where loose files may sit: right of the window on wide layouts.
-    const zoneX = wide ? win.offsetLeft + win.offsetWidth + 18 : 12;
+    // Where loose files may sit: right of the dropdown on wide layouts,
+    // and always below the 26px menu bar strip.
+    const zoneX = wide ? panel.offsetLeft + panel.offsetWidth + 18 : 12;
     const zoneW = Math.max(fieldW - zoneX - 14, 160);
 
     // Folder slots fill the bottom rows right to left, like Finder's free slots.
@@ -178,7 +179,7 @@ export function initSortDesk() {
     files.forEach((f) => {
       if (!f.home) f.home = {};
       f.home.x = zoneX + 30 + f.x * (zoneW - 60) - cellW / 2;
-      f.home.y = 10 + f.y * (zoneH - 20);
+      f.home.y = 34 + f.y * (zoneH - 20);
       if (!f.sorted) { f.el.style.left = `${f.home.x}px`; f.el.style.top = `${f.home.y}px`; }
       f.el.style.width = `${cellW}px`;
     });

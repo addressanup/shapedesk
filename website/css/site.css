@@ -1361,8 +1361,8 @@ input {
 
 .sortdesk {
   position: relative;
-  /* Field and window share one grid cell: if the window is taller than the
-     field, the row — and the desk — grows to fit instead of clipping it. */
+  /* Field and dropdown share one grid cell: if the dropdown is taller than
+     the field, the row — and the desk — grows to fit instead of clipping it. */
   display: grid;
   border-radius: 18px;
   overflow: hidden;
@@ -1381,6 +1381,46 @@ input {
   pointer-events: none;
   opacity: 0.07;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* macOS menu bar across the top of the pretend desktop; the ShapeDesk
+   menulet looks pressed while its dropdown hangs below. */
+
+.sortdesk__bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 7;
+  display: flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 14px;
+  background: rgba(10, 7, 22, 0.55);
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.sortdesk__menulet {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: -8px;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.22);
+  font-weight: 600;
+}
+
+.sortdesk__menulet svg {
+  width: 12px;
+  height: 12px;
+}
+
+.sortdesk__clock {
+  margin-left: auto;
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .sortdesk__field {
@@ -1468,14 +1508,15 @@ input {
   100% { transform: scale(1); }
 }
 
-/* Replica of the app's "ShapeDesk — AI Sort" window (AISortView.swift) --- */
+/* Replica of the app's menu-bar dropdown on its AI Sort page (AISortView.swift).
+   It hangs under the menulet — no title bar, no traffic lights. --- */
 
 .aiwin {
   position: relative;
   grid-area: 1 / 1;
-  align-self: center;
+  align-self: start;
   justify-self: start;
-  margin: 14px 0 14px 16px;
+  margin: 34px 0 14px 16px;
   z-index: 8;
   width: 316px;
   display: flex;
@@ -1491,38 +1532,17 @@ input {
   color: #fff;
 }
 
-.aiwin__bar {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-  height: 30px;
-  border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
-}
-
-.aiwin__lights {
+/* The little anchor notch pointing up at the menulet. */
+.aiwin::before {
+  content: "";
   position: absolute;
-  left: 11px;
-  display: flex;
-  gap: 7px;
-}
-
-.aiwin__lights i {
+  top: -5px;
+  left: 26px;
   width: 11px;
   height: 11px;
-  border-radius: 50%;
-  box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.25);
-}
-
-.aiwin__lights i:nth-child(1) { background: #ff5f57; }
-.aiwin__lights i:nth-child(2) { background: #febc2e; }
-.aiwin__lights i:nth-child(3) { background: #28c840; }
-
-.aiwin__title {
-  font-size: 12.5px;
-  font-weight: 650;
-  color: rgba(255, 255, 255, 0.8);
+  border-radius: 2.5px 0 0 0;
+  background: #221d2e;
+  transform: rotate(45deg);
 }
 
 .aiwin__toolbar {
@@ -1608,6 +1628,7 @@ input {
   color: #7fd6b2;
   font-size: 10px;
   font-weight: 650;
+  text-decoration: none;
 }
 
 .aiwin__pill svg {
@@ -2443,7 +2464,7 @@ input {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  /* The AI Sort window stacks under its desktop, like the hero panel. */
+  /* The AI Sort dropdown stacks under its desktop, like the hero panel. */
   .sortdesk {
     display: flex;
     flex-direction: column;
@@ -2462,6 +2483,10 @@ input {
     width: min(100% - 28px, 420px);
     max-height: none;
     margin: 14px 0;
+  }
+
+  .aiwin::before {
+    display: none;
   }
 
   /* Too narrow for the panel beside the shapes: it moves below them. */
