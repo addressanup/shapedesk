@@ -217,6 +217,40 @@ final class CollisionAndUndoTests: XCTestCase {
         XCTAssertTrue(fixture.exists("Docs/report.pdf"))
     }
 
+    func testHistoryWrittenBeforeDestinationFoldersStillUndoes() async throws {
+        let fixture = try DesktopFixture()
+        try fixture.file("report.pdf")
+        _ = await fixture.sorter().sort(using: StubClassifier())
+        let file = try XCTUnwrap(FileManager.default.contentsOfDirectory(at: fixture.history,
+            includingPropertiesForKeys: nil).first { $0.pathExtension == "json" })
+        var json = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: file)) as? [String: Any])
+        var records = try XCTUnwrap(json["records"] as? [[String: Any]])
+        XCTAssertNil(records[0]["folder"], "Sorting must keep writing the original record format")
+        records[0].removeValue(forKey: "folder")
+        json["records"] = records
+        try JSONSerialization.data(withJSONObject: json).write(to: file)
+        let undo = await fixture.sorter().undoLastSort()
+        XCTAssertEqual(undo.restored, 1)
+        XCTAssertTrue(fixture.exists("report.pdf"))
+    }
+
+    func testUnsafeOrMissingDestinationFoldersAreRejected() async throws {
+        for folder in ["../outside", ".hidden", nil] as [String?] {
+            let fixture = try DesktopFixture()
+            try fixture.file("a.txt", content: "same")
+            try fixture.file("b.txt", content: "same")
+            let scan = try await DuplicateFinder.scan(files: fixture.files(), onProgress: { _ in })
+            _ = await fixture.sorter().moveDuplicates(scan)
+            let store = SortJournalStore(directory: fixture.history)
+            var journal = try XCTUnwrap(store.load().first)
+            journal.records[0].folder = folder
+            try store.save(journal)
+            XCTAssertThrowsError(try store.load(), String(describing: folder))
+            let undo = await fixture.sorter().undoLastSort()
+            XCTAssertEqual(undo.restored, 0)
+        }
+    }
+
     func testOpenFileCheckerDetectsARealOpenDescriptor() throws {
         let fixture = try DesktopFixture()
         let file = try fixture.file("open.pdf")

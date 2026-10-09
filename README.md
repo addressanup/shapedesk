@@ -4,7 +4,8 @@ A macOS menu bar app that arranges your real desktop icons into shapes —
 heart, circle, star, spiral, wave — or spells out a word with them. Icons
 morph smoothly into formation, and everything is reversible. ShapeDesk Pro
 adds AI Sort, which files loose desktop files into category folders and can
-undo every sort.
+undo every sort, and Storage, which shows what is using space in a folder,
+moves duplicate copies aside and lists files and apps you haven't opened lately.
 
 <p align="center">
   <a href="docs/demo.mp4">
@@ -51,7 +52,29 @@ card on the front page also calls `GET /v1/plans` and shows a live
 availability chip when checkout is off.
 
 A grid icon appears in your menu bar. Click it, pick a shape, done.
-"Reset to grid" puts everything back into a normal sorted grid.
+"Reset to grid" puts everything back into a normal sorted grid. With more
+than one display, shapes are arranged on the display whose menu bar you
+clicked.
+
+## Settings
+
+The gear in the panel opens Settings:
+
+- **Open ShapeDesk at login** registers the app as a login item
+  (`SMAppService`). If macOS asks for approval, allow it in System Settings →
+  General → Login Items.
+- **Keyboard shortcut** opens or closes the panel from any app. The default is
+  **⌃⌥⌘D**; click it to record another (it needs ⌘, ⌃ or ⌥, or a function
+  key) or remove it. It is a Carbon hotkey, so it needs no Accessibility
+  permission. macOS lets several apps register one combination, so pick one
+  your other apps don't use.
+- **Notifications** report a finished sort, undo or duplicate move while the
+  panel is closed; clicking one opens the panel.
+- **Sort obvious files on this Mac** (see AI Sort below).
+- **Updates**: ShapeDesk asks GitHub for the latest release at launch and
+  at most daily when the panel opens, and shows **Update to …** in the panel
+  when there is a newer version. Nothing is downloaded or installed
+  automatically. Turn off automatic checks here.
 
 ## AI sorting with ShapeDesk Pro
 
@@ -117,6 +140,17 @@ exactly `0.8`, lower confidence, malformed answers and processing errors all
 leave the file in place. The returned `confidence` is used directly, rather
 than the winning option's probability. Other files continue after a file fails.
 
+With **Sort obvious files on this Mac** on (the default), files whose category
+is beyond doubt never reach the service and use no AI check: default
+screenshot and screen-recording names (macOS in several languages, and
+CleanShot), source code, documents such as PDF, Word, Pages and spreadsheets,
+archives and installers, camera RAW photos, phone and camera photos and
+videos with default names such as `IMG_1234.HEIC`, and music formats such as
+MP3 and FLAC unless the name suggests a recording. Anything ambiguous, such as
+a plain `.png` (possibly a screenshot), an `.m4a` (possibly a voice memo) or a
+`.ts` (TypeScript or video), still goes to the AI. These moves use the same
+journal and undo, and the panel shows how many files were sorted on the Mac.
+
 - Each pass scans only visible regular files directly in the chosen folder
   (the Desktop, unless AI Sort follows a Finder folder or you pick one
   with Services). Directories, packages, symbolic links and Finder aliases
@@ -156,6 +190,39 @@ folder. AI sorting moves files with filesystem access directly; the Finder
 Automation permission arranges icons into shapes and lets AI Sort ask Finder
 which folder is active. Without it, AI Sort targets the Desktop.
 
+## Storage with ShapeDesk Pro
+
+The **Storage** tab is included with ShapeDesk Pro (an active subscription;
+it uses no AI checks and sends nothing to the service). It follows Finder
+exactly like AI Sort, with the same folder rules and **Use Desktop** button,
+and only ever lists the items directly inside that folder.
+
+- **Sizes** lists the folder's items largest first with the space each uses
+  on disk. Folder and package sizes include everything inside them, hidden
+  files too; links are never followed. Click a folder to look inside it, and
+  the back arrow to return.
+- **Duplicates** finds visible regular files with byte-for-byte identical
+  contents, using the same filters as AI Sort (no folders, packages, links,
+  aliases or hidden files). Files are grouped by size, then compared by a
+  SHA-256 of their first 64 KiB, then of their whole contents. Empty files and
+  hard links to the same file are ignored, and files whose data is in iCloud
+  but not on this Mac are skipped rather than downloaded. Each group keeps
+  one copy: by default a name without a copy marker such as `copy` or `(1)`,
+  then the oldest. Click another copy to keep it instead.
+  **Move … to Duplicates** moves the other copies into a `Duplicates` folder
+  inside the scanned folder. Nothing is deleted. Moves use the same journaled,
+  identity-checked renames as AI Sort, and a file or kept copy that changed
+  since the scan stays in place. **Undo last move** puts them back, needs no
+  subscription and is independent of AI Sort's undo; its history is in
+  `~/Library/Application Support/ShapeDesk/DuplicateHistory`.
+- **Not Opened** lists files in the folder and apps in `/Applications` and
+  `~/Applications` that haven't been opened in 30 days, 90 days, 6 months or
+  a year, with their sizes. It uses the "Last opened" date macOS keeps in
+  Spotlight (`kMDItemLastUsedDate`). Items never opened count from the date
+  they were added. Running apps are left out. **Move to Trash** asks Finder,
+  so you can put items back, and Finder asks for your password when an app
+  needs it.
+
 ## Tests
 
 ```sh
@@ -171,8 +238,14 @@ and concurrent sorter instances. Tests never sort your actual desktop or require
 a TypeSafe key. Hosted-client tests cover credential boundaries, transport replay,
 quota denial and subscription-independent undo. Finder tests cover file
 selections, shallow folder scans, replacement identity checks and which
-Finder folders AI Sort follows. Run `npm --prefix server run
-test:postgres` for the backend's real-database concurrency and metering tests.
+Finder folders AI Sort follows. Storage tests cover duplicate detection
+(prefix and full comparison, hard links, keeper choice), duplicate moves and
+undo with changed files and a replaced folder, separate undo histories,
+undo records written before destination folders existed, folder sizes and
+the not-opened rules. Local rules, version comparison, the multi-display
+coordinate conversion and shortcut parsing are tested too. Run
+`npm --prefix server run test:postgres` for the backend's real-database
+concurrency and metering tests.
 Live model quality and checkout/account authentication require the deployed service
 and your configured provider accounts.
 

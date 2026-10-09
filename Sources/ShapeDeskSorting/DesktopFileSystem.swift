@@ -1,4 +1,5 @@
 import Foundation
+import CryptoKit
 import UniformTypeIdentifiers
 import Darwin
 
@@ -77,6 +78,12 @@ final class DesktopFileSystem {
         !name.isEmpty && name != "." && name != ".." && !name.contains("/") && !name.contains("\0")
     }
 
+    /// Destination folders are always visible, direct children of the root.
+    static func validFolder(_ name: String?) -> Bool {
+        guard let name else { return false }
+        return validName(name) && !name.hasPrefix(".")
+    }
+
     private func openRoot(expected: FileIdentity? = nil) throws -> FileDescriptor {
         let root = try FileDescriptor(open(desktop.path, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC),
                                       action: "Opening folder")
@@ -114,14 +121,15 @@ final class DesktopFileSystem {
 
     /// Called after classification. The journal callback must complete durably
     /// before rename. There is deliberately no fallible bookkeeping after success.
-    func move(_ snapshot: FileSnapshot, to category: FileCategory, rootIdentity: FileIdentity,
+    func move(_ snapshot: FileSnapshot, toFolder folder: String, rootIdentity: FileIdentity,
               prepare: (String) throws -> Void) throws -> String {
+        guard Self.validFolder(folder) else { throw SortingError.unsafePath }
         let root = try openRoot(expected: rootIdentity)
         let name = snapshot.metadata.name
         let source = try lockFile(name: name, in: root, url: desktop.appendingPathComponent(name),
                                   identity: snapshot.identity)
         try unchanged(snapshot, descriptor: source)
-        let destination = try categoryDirectory(category, root: root, create: true)
+        let destination = try destinationDirectory(folder, root: root, create: true)
         defer { withExtendedLifetime((root, source, destination)) {} }
         for index in 0..<10_000 {
             try Task.checkCancellation()
@@ -131,7 +139,7 @@ final class DesktopFileSystem {
             try Task.checkCancellation()
             try unchanged(snapshot, descriptor: source)
             try checkName(name, in: root, identity: snapshot.identity)
-            try checkName(category.rawValue, in: root, identity: identity(of: destination))
+            try checkName(folder, in: root, identity: identity(of: destination))
             do {
                 try rename(root.value, name, destination.value, target)
                 return target
@@ -144,27 +152,28 @@ final class DesktopFileSystem {
 
     func restore(_ record: MoveRecord, rootIdentity: FileIdentity,
                  prepare: (String) throws -> Void) throws -> String {
-        guard Self.validName(record.originalName), Self.validName(record.destinationName) else {
+        guard Self.validName(record.originalName), Self.validName(record.destinationName),
+              let folder = record.folderName, Self.validFolder(folder) else {
             throw SortingError.unsafePath
         }
         let root = try openRoot(expected: rootIdentity)
-        let category = try categoryDirectory(record.category, root: root, create: false)
-        let sourceURL = desktop.appendingPathComponent(record.category.rawValue)
+        let directory = try destinationDirectory(folder, root: root, create: false)
+        let sourceURL = desktop.appendingPathComponent(folder)
             .appendingPathComponent(record.destinationName)
-        let source = try lockFile(name: record.destinationName, in: category,
+        let source = try lockFile(name: record.destinationName, in: directory,
                                   url: sourceURL, identity: record.identity)
         // Keep the descriptor (and its exclusive lock) alive through the rename.
-        defer { withExtendedLifetime((root, source, category)) {} }
+        defer { withExtendedLifetime((root, source, directory)) {} }
         for index in 0..<10_000 {
             try Task.checkCancellation()
             let name = Self.collisionName(record.originalName, index: index)
             if try exists(name, in: root) { continue }
             try prepare(name)
             try Task.checkCancellation()
-            try checkName(record.destinationName, in: category, identity: record.identity)
-            try checkName(record.category.rawValue, in: root, identity: identity(of: category))
+            try checkName(record.destinationName, in: directory, identity: record.identity)
+            try checkName(folder, in: root, identity: identity(of: directory))
             do {
-                try rename(category.value, record.destinationName, root.value, name)
+                try rename(directory.value, record.destinationName, root.value, name)
                 return name
             } catch SortingError.io(_, let code) where code == EEXIST {
                 continue
@@ -177,17 +186,60 @@ final class DesktopFileSystem {
 
     func location(of record: MoveRecord, rootIdentity: FileIdentity) throws -> RecordLocation {
         guard Self.validName(record.originalName), Self.validName(record.destinationName),
+              let folder = record.folderName, Self.validFolder(folder),
               record.restoredName.map(Self.validName) ?? true else { throw SortingError.unsafePath }
         let root = try openRoot(expected: rootIdentity)
         if let name = record.restoredName, try matches(name, in: root, identity: record.identity) { return .restored }
         if try matches(record.originalName, in: root, identity: record.identity) { return .atOriginal }
         do {
-            let category = try categoryDirectory(record.category, root: root, create: false)
-            if try matches(record.destinationName, in: category, identity: record.identity) { return .atDestination }
+            let directory = try destinationDirectory(folder, root: root, create: false)
+            if try matches(record.destinationName, in: directory, identity: record.identity) { return .atDestination }
         } catch SortingError.io(_, let code) where code == ENOENT {
             return .missing
         }
         return .missing
+    }
+
+    /// True when the scanned file is still in place with the same identity, size
+    /// and modification time.
+    func isUnchanged(_ snapshot: FileSnapshot, rootIdentity: FileIdentity) throws -> Bool {
+        let root = try openRoot(expected: rootIdentity)
+        do {
+            let info = try information(snapshot.metadata.name, in: root)
+            return FileIdentity(info) == snapshot.identity && info.st_size == snapshot.metadata.byteSize
+                && Int64(info.st_mtimespec.tv_sec) == snapshot.modifiedSeconds
+                && Int64(info.st_mtimespec.tv_nsec) == snapshot.modifiedNanoseconds
+        } catch SortingError.io(_, let code) where code == ENOENT {
+            return false
+        }
+    }
+
+    /// SHA-256 of a scanned file's contents (or of its first `limit` bytes).
+    /// The descriptor is checked against the snapshot before and after reading,
+    /// and files whose data is not on this Mac are refused rather than downloaded.
+    func digest(of snapshot: FileSnapshot, rootIdentity: FileIdentity, limit: Int = .max) throws -> Data {
+        let root = try openRoot(expected: rootIdentity)
+        let name = snapshot.metadata.name
+        let file = try FileDescriptor(openat(root.value, name, O_RDONLY | O_NOFOLLOW | O_NONBLOCK | O_CLOEXEC),
+                                      action: "Opening file safely")
+        try unchanged(snapshot, descriptor: file)
+        var info = stat()
+        guard fstat(file.value, &info) == 0 else { throw SortingError.io("Checking file", errno) }
+        guard info.st_flags & UInt32(SF_DATALESS) == 0 else { throw SortingError.inUse }
+        var hasher = SHA256()
+        var buffer = [UInt8](repeating: 0, count: 1 << 20)
+        var remaining = limit
+        while remaining > 0 {
+            try Task.checkCancellation()
+            let count = buffer.withUnsafeMutableBytes { Darwin.read(file.value, $0.baseAddress, min($0.count, remaining)) }
+            if count < 0 && errno == EINTR { continue }
+            guard count >= 0 else { throw SortingError.io("Reading file", errno) }
+            if count == 0 { break }
+            buffer.withUnsafeBytes { hasher.update(bufferPointer: UnsafeRawBufferPointer(rebasing: $0[..<count])) }
+            remaining -= count
+        }
+        try unchanged(snapshot, descriptor: file)
+        return Data(hasher.finalize())
     }
 
     private func lockFile(name: String, in directory: FileDescriptor, url: URL,
@@ -212,12 +264,12 @@ final class DesktopFileSystem {
         return file
     }
 
-    private func categoryDirectory(_ category: FileCategory, root: FileDescriptor, create: Bool) throws -> FileDescriptor {
-        if create && mkdirat(root.value, category.rawValue, 0o755) != 0 && errno != EEXIST {
-            throw SortingError.io("Creating \(category.rawValue) folder", errno)
+    private func destinationDirectory(_ folder: String, root: FileDescriptor, create: Bool) throws -> FileDescriptor {
+        if create && mkdirat(root.value, folder, 0o755) != 0 && errno != EEXIST {
+            throw SortingError.io("Creating \(folder) folder", errno)
         }
-        return try FileDescriptor(openat(root.value, category.rawValue, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC),
-                                  action: "Opening \(category.rawValue) folder safely")
+        return try FileDescriptor(openat(root.value, folder, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC),
+                                  action: "Opening \(folder) folder safely")
     }
 
     private func unchanged(_ snapshot: FileSnapshot, descriptor: FileDescriptor) throws {

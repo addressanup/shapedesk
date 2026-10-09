@@ -16,6 +16,7 @@ final class MenuBarPanel: NSObject, NSWindowDelegate {
                                       styleMask: [.borderless, .nonactivatingPanel],
                                       backing: .buffered, defer: true)
     private let onOpen: () -> Void
+    var onClose: () -> Void = {}
     private var clickMonitor: Any?
     /// Uptime when a click elsewhere or a focus change last closed the panel.
     private var dismissedAt: TimeInterval = 0
@@ -45,6 +46,9 @@ final class MenuBarPanel: NSObject, NSWindowDelegate {
         panel.contentView = NSHostingView(rootView: content().background(PanelBackground()))
     }
 
+    var isOpen: Bool { panel.isVisible }
+    var screen: NSScreen? { panel.isVisible ? panel.screen : nil }
+
     @objc private func toggle() {
         if panel.isVisible {
             close()
@@ -54,6 +58,11 @@ final class MenuBarPanel: NSObject, NSWindowDelegate {
         // Otherwise this click is the one that just dismissed the panel: on
         // recent macOS another process draws the menu bar, so a click on the
         // icon also counts as a click outside. Leave the panel closed.
+    }
+
+    /// For the keyboard shortcut, which never doubles as a click outside.
+    func toggleFromShortcut() {
+        if panel.isVisible { close() } else { open() }
     }
 
     func open() {
@@ -86,6 +95,7 @@ final class MenuBarPanel: NSObject, NSWindowDelegate {
             NSEvent.removeMonitor(clickMonitor)
             self.clickMonitor = nil
         }
+        onClose()
     }
 
     func windowDidResignKey(_ notification: Notification) {

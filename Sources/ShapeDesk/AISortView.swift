@@ -1,7 +1,7 @@
 import SwiftUI
 import ShapeDeskSorting
 
-private let deskTint = Color(red: 0.20, green: 0.48, blue: 0.37)
+let deskTint = Color(red: 0.20, green: 0.48, blue: 0.37)
 
 /// AI Sort as it lives inside the menu bar dropdown: the sort page, or the
 /// Pro account page with a way back to sorting.
@@ -106,6 +106,11 @@ struct AISortView: View {
                     SortCount(label: "Kept in place", count: model.statistics.skipped, countFont: countFont)
                 }
                 .accessibilityElement(children: .combine)
+                if model.statistics.sortedLocally > 0 {
+                    Label("\(model.statistics.sortedLocally.formatted()) sorted on this Mac without using AI checks",
+                          systemImage: "bolt.horizontal.circle")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
             }
 
             if model.isBusy {
@@ -232,6 +237,7 @@ struct ProAccountView: View {
                     ProBenefit(symbol: "folder.badge.gearshape", text: "1,000 AI file checks each month")
                     ProBenefit(symbol: "finder", text: "Sort from Finder or the app")
                     ProBenefit(symbol: "arrow.uturn.backward", text: "Safe moves and undo, even offline")
+                    ProBenefit(symbol: "internaldrive", text: "Storage: sizes, duplicates, unopened files")
                     ProBenefit(symbol: "desktopcomputer", text: "One subscription, up to 3 Macs")
                 }
             }
@@ -329,7 +335,7 @@ struct ProAccountView: View {
                 couponSection
             }
             Divider()
-            Text("Each completed AI classification uses one check, including files kept in place. Failed AI requests use no checks. Unused checks don’t roll over. Desktop shapes and undo remain free.")
+            Text("Each completed AI classification uses one check, including files kept in place. Failed AI requests and obvious files sorted on this Mac use no checks. Unused checks don’t roll over. Desktop shapes and undo remain free.")
                 .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             Text("File names, types, sizes and dates are processed by ShapeDesk and TypeSafe Jev. Contents and full paths stay on your Mac.")
                 .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)

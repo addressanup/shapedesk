@@ -66,6 +66,8 @@ public struct SortStatistics: Equatable, Sendable {
     public internal(set) var phase: Phase = .idle
     public internal(set) var totalScanned = 0
     public internal(set) var moved = 0
+    /// Moves decided by on-device rules, which use no AI checks.
+    public internal(set) var sortedLocally = 0
     public internal(set) var skipped = 0
     public internal(set) var errors = 0
     public internal(set) var currentFile: String?
@@ -105,14 +107,14 @@ enum SortingError: LocalizedError {
     }
 }
 
-struct FileIdentity: Codable, Equatable, Sendable {
+struct FileIdentity: Codable, Hashable, Sendable {
     let device: Int32
     let inode: UInt64
     let birthSeconds: Int64
     let birthNanoseconds: Int64
 }
 
-struct FileSnapshot: Sendable {
+struct FileSnapshot: Equatable, Sendable {
     let metadata: FileMetadata
     let identity: FileIdentity
     let modifiedSeconds: Int64
@@ -122,7 +124,10 @@ struct FileSnapshot: Sendable {
 struct MoveRecord: Codable, Sendable {
     var id = UUID()
     let originalName: String
-    let category: FileCategory
+    /// The AI category. Moves that are not classifications, such as duplicate
+    /// copies, have none and name their destination in `folder` instead.
+    let category: FileCategory?
+    var folder: String? = nil
     var destinationName: String
     let identity: FileIdentity
     let confidence: Double
@@ -130,6 +135,9 @@ struct MoveRecord: Codable, Sendable {
     /// Written before undo's rename, so an interrupted undo is also recoverable.
     var restoredName: String?
     var resolved = false
+
+    /// Records written before `folder` existed always have a category.
+    var folderName: String? { folder ?? category?.rawValue }
 }
 
 struct SortJournal: Codable, Sendable {

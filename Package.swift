@@ -11,6 +11,7 @@ let package = Package(
             dependencies: ["ShapeDeskSorting"],
             path: "Sources/ShapeDesk"
         ),
-        .testTarget(name: "ShapeDeskSortingTests", dependencies: ["ShapeDeskSorting"])
+        .testTarget(name: "ShapeDeskSortingTests", dependencies: ["ShapeDeskSorting"]),
+        .testTarget(name: "ShapeDeskTests", dependencies: ["ShapeDesk"])
     ]
 )

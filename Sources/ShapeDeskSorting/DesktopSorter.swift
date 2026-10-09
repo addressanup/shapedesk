@@ -92,13 +92,15 @@ public actor DesktopSorter {
                             category: decision.category, destinationName: snapshot.metadata.name,
                             identity: snapshot.identity, confidence: decision.confidence, model: decision.model)
                         let index = journal.records.count
-                        _ = try files.move(snapshot, to: decision.category, rootIdentity: rootIdentity) { destination in
+                        _ = try files.move(snapshot, toFolder: decision.category.rawValue,
+                                           rootIdentity: rootIdentity) { destination in
                             record.destinationName = destination
                             if journal.records.count == index { journal.records.append(record) }
                             else { journal.records[index] = record }
                             try history.save(journal)
                         }
                         stats.moved += 1
+                        if decision.model == LocalRules.model { stats.sortedLocally += 1 }
                         stats.categories[decision.category, default: CategoryStatistics()].moved += 1
                         stats.message = "Moved \(snapshot.metadata.name) to \(decision.category.rawValue)."
                     } else {
@@ -127,6 +129,84 @@ public actor DesktopSorter {
             }
         }
         stats.currentFile = nil
+        await onProgress(stats)
+        return stats
+    }
+
+    /// Moves every copy except each group's keeper into `folder`, through the same
+    /// journaled, identity-checked moves as sorting, so `undoLastSort` restores them.
+    /// A group whose keeper changed or vanished since the scan is left alone.
+    @discardableResult
+    public func moveDuplicates(_ scan: DuplicateScan, into folder: String = DuplicateFinder.folderName,
+                               onProgress: @Sendable (DuplicateMoveStatistics) async -> Void = { _ in }) async -> DuplicateMoveStatistics {
+        var stats = DuplicateMoveStatistics()
+        stats.total = scan.extraCopies
+        guard !running else {
+            stats.phase = .failed
+            stats.message = SortingError.busy.localizedDescription
+            await onProgress(stats)
+            return stats
+        }
+        running = true
+        defer { running = false }
+        do {
+            let lock = try history.lock()
+            defer { withExtendedLifetime(lock) {} }
+            _ = try history.load() // Fail closed if undo history cannot be read.
+            let rootIdentity = try files.rootIdentity()
+            guard rootIdentity == scan.rootIdentity, files.desktop.path == scan.folder.path else { throw SortingError.changed }
+            var journal = SortJournal(desktopPath: files.desktop.path, desktopIdentity: rootIdentity)
+            stats.phase = .moving
+            stats.message = "Moving duplicate copies…"
+            await onProgress(stats)
+            for group in scan.groups {
+                try Task.checkCancellation()
+                let extras = group.files.filter { $0.name != group.keeper }
+                guard let keeper = group.files.first(where: { $0.name == group.keeper }),
+                      try files.isUnchanged(keeper.snapshot, rootIdentity: rootIdentity) else {
+                    stats.skipped += extras.count
+                    stats.lastIssue = "\(group.keeper): the copy to keep changed, so its duplicates stayed in place."
+                    await onProgress(stats)
+                    continue
+                }
+                for file in extras {
+                    try Task.checkCancellation()
+                    do {
+                        var record = MoveRecord(originalName: file.name, category: nil, folder: folder,
+                            destinationName: file.name, identity: file.snapshot.identity,
+                            confidence: 1, model: DuplicateFinder.model)
+                        let index = journal.records.count
+                        _ = try files.move(file.snapshot, toFolder: folder, rootIdentity: rootIdentity) { destination in
+                            record.destinationName = destination
+                            if journal.records.count == index { journal.records.append(record) }
+                            else { journal.records[index] = record }
+                            try history.save(journal)
+                        }
+                        stats.moved += 1
+                        stats.movedBytes += file.byteSize
+                        stats.message = "Moved \(file.name) to \(folder)."
+                    } catch {
+                        if Task.isCancelled || error is CancellationError { throw CancellationError() }
+                        stats.skipped += 1
+                        stats.lastIssue = "\(file.name): \(error.localizedDescription)"
+                    }
+                    await onProgress(stats)
+                }
+            }
+            stats.phase = .completed
+            stats.message = "Moved \(stats.moved) duplicate \(stats.moved == 1 ? "copy" : "copies") to \(folder)"
+                + (stats.skipped > 0 ? "; \(stats.skipped) left in place." : ".")
+        } catch {
+            stats.skipped = stats.total - stats.moved
+            if Task.isCancelled || error is CancellationError {
+                stats.phase = .cancelled
+                stats.message = "Stopped. \(stats.moved) copies moved; the rest stayed in place."
+            } else {
+                stats.phase = .failed
+                stats.message = error.localizedDescription
+                stats.lastIssue = error.localizedDescription
+            }
+        }
         await onProgress(stats)
         return stats
     }

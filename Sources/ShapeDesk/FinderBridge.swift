@@ -93,6 +93,15 @@ enum FinderBridge {
         return points
     }
 
+    /// Finder's own Trash, so Put Back works and Finder asks for an administrator
+    /// password when an item (such as an App Store app) needs one.
+    static func moveToTrash(_ url: URL) throws {
+        try run([
+            "set theItem to (POSIX file \"\(escape(url.path))\") as alias",
+            "tell application \"Finder\" to delete theItem"
+        ])
+    }
+
     static func insertionFolder() throws -> URL? {
         let r = try run([
             "with timeout of 3 seconds",
