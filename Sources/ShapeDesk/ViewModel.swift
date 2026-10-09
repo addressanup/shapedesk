@@ -1,28 +1,33 @@
 import SwiftUI
 import AppKit
 
-enum PanelTab: String, CaseIterable { case shapes = "Shapes", sort = "AI Sort" }
+enum PanelTab: String, CaseIterable { case shapes = "Shapes", sort = "AI Sort", storage = "Storage" }
 
 @MainActor
 final class ViewModel: ObservableObject {
     @Published var panelTab: PanelTab = .shapes
+    @Published var showSettings = false
     @Published var iconCount = 0
     @Published var status = "Click a shape to arrange your desktop."
     @Published var customText = "HELLO"
     @Published var fill: Double = 0.8
     @Published var animate = true
     @Published var busy = false
+    /// The display to arrange: the one showing the panel, i.e. whose menu bar was clicked.
+    var screen: () -> NSScreen? = { NSScreen.main }
 
     /// Usable desktop area in Finder coordinates (origin top-left),
     /// excluding the menu bar and Dock.
     private var desktopRect: CGRect {
-        let screen = NSScreen.main ?? NSScreen.screens[0]
-        let frame = screen.frame
-        let vis = screen.visibleFrame
-        return CGRect(x: vis.minX,
-                      y: frame.height - vis.maxY,
-                      width: vis.width,
-                      height: vis.height)
+        let primary = NSScreen.screens.first
+        guard let screen = screen() ?? primary else { return .zero }
+        return Self.finderRect(visible: screen.visibleFrame, primaryTop: primary?.frame.maxY ?? screen.frame.maxY)
+    }
+
+    /// AppKit measures every display from the primary display's bottom-left
+    /// corner, y up. Finder measures desktop positions from its top-left, y down.
+    nonisolated static func finderRect(visible: CGRect, primaryTop: CGFloat) -> CGRect {
+        CGRect(x: visible.minX, y: primaryTop - visible.maxY, width: visible.width, height: visible.height)
     }
 
     func refresh() {

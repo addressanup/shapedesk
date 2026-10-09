@@ -44,6 +44,7 @@ struct SortJournalStore: JournalStoring {
                   journal.records.allSatisfy({
                       DesktopFileSystem.validName($0.originalName) && !$0.originalName.hasPrefix(".")
                       && DesktopFileSystem.validName($0.destinationName)
+                      && DesktopFileSystem.validFolder($0.folderName)
                       && ($0.restoredName.map(DesktopFileSystem.validName) ?? true)
                       && $0.confidence.isFinite && $0.confidence > 0.8 && $0.confidence <= 1
                   }) else { throw SortingError.history("Unsupported or unsafe undo record.") }

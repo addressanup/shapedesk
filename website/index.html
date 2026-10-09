@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>ShapeDesk: desktop shapes and AI file sorting for your Mac</title>
-  <meta name="description" content="ShapeDesk is a macOS menu bar app that moves the real icons on your desktop into a heart, a star, a spiral, or any word you type, for free. ShapeDesk Pro adds AI Sort, which files loose files into eight folders, with undo.">
+  <meta name="description" content="ShapeDesk is a macOS menu bar app that moves the real icons on your desktop into a heart, a star, a spiral, or any word you type, for free. ShapeDesk Pro adds AI Sort, which files loose files into eight folders with undo, and Storage, which finds big folders, duplicates and files you haven't opened.">
   <link rel="canonical" href="https://shapedesk.space/">
   <meta name="theme-color" content="#110d1e">
   <meta name="color-scheme" content="dark">
@@ -13,7 +13,7 @@
   <meta property="og:url" content="https://shapedesk.space/">
   <meta property="og:site_name" content="ShapeDesk">
   <meta property="og:title" content="ShapeDesk: desktop shapes and AI file sorting">
-  <meta property="og:description" content="A macOS menu bar app that arranges your real desktop icons into hearts, stars, spirals, and words. ShapeDesk Pro adds AI Sort: loose files filed into folders, with undo.">
+  <meta property="og:description" content="A macOS menu bar app that arranges your real desktop icons into hearts, stars, spirals, and words. ShapeDesk Pro adds AI Sort, which files loose files into folders with undo, and Storage, which finds big folders and duplicate copies.">
   <meta property="og:image" content="https://shapedesk.space/img/og.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -39,8 +39,8 @@
     "name": "ShapeDesk",
     "operatingSystem": "macOS 13 or later",
     "applicationCategory": "UtilitiesApplication",
-    "description": "A menu bar app that arranges your real desktop icons into shapes or spells words with them. ShapeDesk Pro adds AI Sort, which files loose files into eight folders, with undo.",
-    "softwareVersion": "1.1",
+    "description": "A menu bar app that arranges your real desktop icons into shapes or spells words with them. ShapeDesk Pro adds AI Sort, which files loose files into eight folders with undo, and Storage, which shows folder sizes, duplicates and unopened files.",
+    "softwareVersion": "1.4",
     "downloadUrl": "https://github.com/addressanup/shapedesk/releases/latest/download/ShapeDesk.zip",
     "url": "https://shapedesk.space/",
     "offers": [
@@ -146,6 +146,7 @@
       <a class="menubar__app" href="#top">ShapeDesk</a>
       <a class="menubar__item menubar__item--mid" href="#how">How it works</a>
       <a class="menubar__item" href="#ai-sort">AI Sort</a>
+      <a class="menubar__item menubar__item--storage" href="#storage">Storage</a>
       <a class="menubar__item" href="#pro">Pro</a>
       <a class="menubar__item menubar__item--mid" href="#install">Install</a>
       <a class="menubar__item menubar__item--wide" href="#faq">FAQ</a>
@@ -215,7 +216,7 @@
       <div class="hero-copy">
         <h1 id="hero-title">Your desktop,<br>in any shape.</h1>
         <div class="hero-copy__aside">
-          <a class="hero-pill" href="#ai-sort">New in 1.1 · AI Sort tidies loose files into folders</a>
+          <a class="hero-pill" href="#storage">New in 1.4 · Storage shows what's using your space</a>
           <p>ShapeDesk is a free menu bar app that moves the real icons on your Mac's desktop into a heart, a star, a spiral, or any word you type. When you're done, one click lines them back up.</p>
           <div class="cta-row">
             <a class="button-download" href="https://github.com/addressanup/shapedesk/releases/latest/download/ShapeDesk.zip">
@@ -224,7 +225,7 @@
             </a>
             <a class="link-quiet" href="https://github.com/addressanup/shapedesk">View source on GitHub</a>
           </div>
-          <p class="meta">v1.1 · macOS 13+ · Apple Silicon &amp; Intel</p>
+          <p class="meta">v1.4 · macOS 13+ · Apple Silicon &amp; Intel</p>
         </div>
       </div>
 
@@ -360,7 +361,7 @@
           <div class="aiwin__toolbar">
             <svg class="aiwin__glyph" viewBox="0 0 16 16" aria-hidden="true"><use href="#em-grid"/></svg>
             <span class="aiwin__app">ShapeDesk</span>
-            <span class="aiwin__seg"><a href="#how">Shapes</a><span class="is-on">AI Sort</span></span>
+            <span class="aiwin__seg"><a href="#how">Shapes</a><span class="is-on">AI Sort</span><a href="#storage">Storage</a></span>
           </div>
           <div class="aiwin__body">
             <div class="aiwin__intro">
@@ -444,7 +445,7 @@
             <figcaption class="meta">Everything sent for one file</figcaption>
           </figure>
           <h3>Names, not contents</h3>
-          <p>AI Sort sends a file's name, type, size and dates to ShapeDesk's service, which asks TypeSafe's Jev model to choose a folder. File contents and full paths never leave your Mac.</p>
+          <p>AI Sort sends a file's name, type, size and dates to ShapeDesk's service, which asks TypeSafe's Jev model to choose a folder. File contents and full paths never leave your Mac, and obvious files, like default-named screenshots, are sorted on your Mac without being sent at all.</p>
         </article>
         <article class="how__item">
           <figure class="figure figure--code">
@@ -480,10 +481,63 @@ Undo ↩ restored 16 of 16</code></pre>
       </div>
     </section>
 
+    <section class="section storage" id="storage" aria-labelledby="storage-title">
+      <div class="section__head">
+        <h2 id="storage-title">See what's using your space.</h2>
+        <p>Storage is part of ShapeDesk Pro. For the folder open in Finder, or your Desktop, it shows what takes the most room, which files are exact copies, and what you haven't opened in months. It all happens on your Mac; no file details leave it.</p>
+      </div>
+      <div class="how__grid">
+        <article class="how__item">
+          <figure class="figure">
+            <div class="figure__frame figure__frame--bars figure__frame--sizes" role="img" aria-label="Five example folders, largest first: Client work 18.4 GB, Music stems 7.9 GB, Backups 6.1 GB, Photos 2024 3.2 GB and Keynote assets 840 MB">
+              <span class="bars__name">Client work</span><span class="bars__track"><i style="--w:100%"></i></span><span class="bars__val">18.4 GB</span>
+              <span class="bars__name">Music stems</span><span class="bars__track"><i style="--w:43%"></i></span><span class="bars__val">7.9 GB</span>
+              <span class="bars__name">Backups</span><span class="bars__track"><i style="--w:33%"></i></span><span class="bars__val">6.1 GB</span>
+              <span class="bars__name">Photos 2024</span><span class="bars__track"><i style="--w:17%"></i></span><span class="bars__val">3.2 GB</span>
+              <span class="bars__name">Keynote assets</span><span class="bars__track"><i style="--w:5%"></i></span><span class="bars__val">840 MB</span>
+            </div>
+            <figcaption class="meta">Example folder · largest first</figcaption>
+          </figure>
+          <h3>Biggest first</h3>
+          <p>Sizes lists everything in the folder, largest first, with the space each item really takes on disk. A folder's size includes everything inside it, and clicking one shows what's in there.</p>
+        </article>
+        <article class="how__item">
+          <figure class="figure">
+            <div class="figure__frame figure__frame--dups" role="img" aria-label="An example duplicate group: Quarterly report.pdf stays, and Quarterly report copy.pdf and Quarterly report (1).pdf move to the Duplicates folder">
+              <div class="dupcard">
+                <div class="dupcard__head">3 copies · 420 kB each</div>
+                <div class="dupcard__row is-kept"><span class="dupcard__radio"><svg viewBox="0 0 12 12"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="m3.3 6.2 1.8 1.9 3.6-4"/></svg></span><span class="dupcard__name">Quarterly report.pdf</span><span class="dupcard__tag">Keep</span></div>
+                <div class="dupcard__row"><span class="dupcard__radio"></span><span class="dupcard__name">Quarterly report copy.pdf</span><span class="dupcard__tag">Move</span></div>
+                <div class="dupcard__row"><span class="dupcard__radio"></span><span class="dupcard__name">Quarterly report (1).pdf</span><span class="dupcard__tag">Move</span></div>
+              </div>
+              <span class="dupcard__button">Move 2 copies to Duplicates</span>
+            </div>
+            <figcaption class="meta">Byte-for-byte copies · one stays put</figcaption>
+          </figure>
+          <h3>Copies, set aside</h3>
+          <p>Duplicates compares files byte for byte and keeps one copy of each, the original unless you pick another. The rest move into a Duplicates folder right beside them, not the Trash, and Undo puts them back.</p>
+        </article>
+        <article class="how__item">
+          <figure class="figure">
+            <div class="figure__frame figure__frame--bars figure__frame--unused" role="img" aria-label="Example days since last opened, against a dashed 90-day line: Blender.app, over a year, Course notes.pdf, 230 days, and GarageBand.app, 168 days, are past it; Figma.app, 12 days, and Invoice-0423.pdf, 3 days, are not">
+              <span class="bars__name">Blender.app</span><span class="bars__track bars__track--mark"><i style="--w:100%"></i></span><span class="bars__val">1 yr+</span>
+              <span class="bars__name">Course notes.pdf</span><span class="bars__track"><i style="--w:64%"></i></span><span class="bars__val">230 d</span>
+              <span class="bars__name">GarageBand.app</span><span class="bars__track"><i style="--w:47%"></i></span><span class="bars__val">168 d</span>
+              <span class="bars__name">Figma.app</span><span class="bars__track"><i class="is-below" style="--w:4%"></i></span><span class="bars__val">12 d</span>
+              <span class="bars__name">Invoice-0423.pdf</span><span class="bars__track"><i class="is-below" style="--w:2%"></i></span><span class="bars__val">3 d</span>
+            </div>
+            <figcaption class="meta">Days since last opened · listed after 90</figcaption>
+          </figure>
+          <h3>Not opened lately</h3>
+          <p>Like iPhone's offload suggestions, for your Mac: files and apps you haven't opened in 30 days to a year, with the space each one takes. Move to Trash goes through Finder, so Put Back still works.</p>
+        </article>
+      </div>
+    </section>
+
     <section class="section pro" id="pro" aria-labelledby="pro-title">
       <div class="section__head">
         <h2 id="pro-title">ShapeDesk Pro</h2>
-        <p>Shapes, words and undo stay free. Pro adds AI Sort.</p>
+        <p>Shapes, words and undo stay free. Pro adds AI Sort and Storage.</p>
       </div>
       <div class="pro__grid">
         <div class="plancard" aria-label="Pretend copy of the Account page inside ShapeDesk's menu bar dropdown">
@@ -502,6 +556,7 @@ Undo ↩ restored 16 of 16</code></pre>
               <li><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" d="M1.8 4.4a1.6 1.6 0 0 1 1.6-1.6h3l1.2 1.2h6a1.6 1.6 0 0 1 1.6 1.6v6a1.6 1.6 0 0 1-1.6 1.6h-10a1.6 1.6 0 0 1-1.6-1.6z"/><path fill="currentColor" d="M11.6 8.6a2.3 2.3 0 1 0 0 4.6 2.3 2.3 0 0 0 0-4.6zm-.8 2.3.9-1.5m-.9 1.5-.9-1.5m.9 1.5 1.5.9m-1.5-.9-1.5.9"/></svg><span><b id="plan-checks">1,000</b> AI file checks each month</span></li>
               <li><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.6" y="1.6" width="12.8" height="12.8" rx="3.4" fill="none" stroke="currentColor" stroke-width="1.3"/><path fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" d="M5.2 8.4a2.8 2.8 0 0 0 5.6 0M5 5.4h.01M11 5.4h.01" transform="translate(0 .3)"/></svg><span>Sort from Finder or the app</span></li>
               <li><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" d="M6.4 3.4 3.4 6.4l3 3M3.6 6.4h6.2a4.2 4.2 0 0 1 0 8.4h-3"/></svg><span>Safe moves and undo, even offline</span></li>
+              <li><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.6" y="4" width="12.8" height="8" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.3"/><path stroke="currentColor" stroke-width="1.3" stroke-linecap="round" d="M4.4 8h4.4"/><circle cx="11.4" cy="8" r="1" fill="currentColor"/></svg><span>Storage: sizes, duplicates, unopened files</span></li>
               <li><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.6" y="2.4" width="12.8" height="8.6" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.3"/><path stroke="currentColor" stroke-width="1.3" stroke-linecap="round" d="M6 13.4h4M8 11v2.4"/></svg><span>One subscription, up to <b id="plan-macs">3</b> Macs</span></li>
             </ul>
             <a class="button-download" href="https://github.com/addressanup/shapedesk/releases/latest/download/ShapeDesk.zip">
@@ -526,7 +581,7 @@ Undo ↩ restored 16 of 16</code></pre>
           </article>
         </div>
       </div>
-      <p class="pro__fine">Each AI check covers one file, including files that stay put. Failed checks are free. Checks reset on the 1st of each month (UTC) and don't roll over. Cancel anytime in Manage billing; Pro stays on until the end of the period you've paid for.</p>
+      <p class="pro__fine">Each AI check covers one file, including files that stay put. Failed checks are free, and so are Storage and the obvious files ShapeDesk sorts on your Mac. Checks reset on the 1st of each month (UTC) and don't roll over. Cancel anytime in Manage billing; Pro stays on until the end of the period you've paid for.</p>
     </section>
 
     <section class="section install" id="install" aria-labelledby="install-title">
@@ -649,11 +704,15 @@ Undo ↩ restored 16 of 16</code></pre>
       <div class="faq__list">
         <details id="privacy">
           <summary>What can ShapeDesk see on my Mac?</summary>
-          <p>Shapes use only the names and positions of your desktop items, read through Finder, and nothing leaves your Mac. AI Sort, part of Pro, sends each file's name, type, size and dates to ShapeDesk's service and TypeSafe's Jev model to choose a folder. It never sends file contents or full paths. Your Pro recovery key stays in your Mac's Keychain.</p>
+          <p>Shapes use only the names and positions of your desktop items, read through Finder, and nothing leaves your Mac. AI Sort, part of Pro, sends each file's name, type, size and dates to ShapeDesk's service and TypeSafe's Jev model to choose a folder. It never sends file contents or full paths. Storage, also part of Pro, reads sizes and dates and compares file contents only on your Mac. Your Pro recovery key stays in your Mac's Keychain.</p>
         </details>
         <details>
           <summary>Is ShapeDesk still free?</summary>
-          <p>Yes. Shapes, words, Reset to grid and Undo are free. AI Sort needs ShapeDesk Pro: $5 a month for 1,000 AI checks, shared across up to 3 Macs.</p>
+          <p>Yes. Shapes, words, Reset to grid and Undo are free. AI Sort and Storage need ShapeDesk Pro: $5 a month for 1,000 AI checks, shared across up to 3 Macs. Storage doesn't use checks.</p>
+        </details>
+        <details>
+          <summary>Does Storage delete anything?</summary>
+          <p>No. Duplicates moves extra copies into a Duplicates folder next to them, and Undo last move puts them back, with or without Pro. Not Opened only lists things; if you choose Move to Trash, it asks first and goes through Finder, so Put Back works until you empty the Trash.</p>
         </details>
         <details>
           <summary>Can AI Sort lose or overwrite my files?</summary>
@@ -661,7 +720,7 @@ Undo ↩ restored 16 of 16</code></pre>
         </details>
         <details>
           <summary>What counts as an AI check?</summary>
-          <p>One completed classification of one file, whether it moves or stays. Failed checks are free. Your checks reset on the 1st of each month (UTC).</p>
+          <p>One completed classification of one file, whether it moves or stays. Failed checks are free, and obvious files that ShapeDesk sorts on your Mac, like default-named screenshots, don't use one. Your checks reset on the 1st of each month (UTC).</p>
         </details>
         <details>
           <summary>How do I use Pro on another Mac?</summary>
@@ -678,6 +737,10 @@ Undo ↩ restored 16 of 16</code></pre>
         <details>
           <summary>Will I get my old layout back?</summary>
           <p>Reset to grid lines every icon up in a tidy grid, sorted by name, the way Finder arranges a fresh desktop. ShapeDesk doesn't save the exact spots your icons were in before, so take a screenshot first if your layout matters to you. AI Sort's Undo last sort is different: it restores the latest sort exactly, even offline.</p>
+        </details>
+        <details>
+          <summary>Can I open ShapeDesk from the keyboard?</summary>
+          <p>Yes. Press ⌃⌥⌘D in any app, or record your own shortcut in the panel's Settings (the gear). Settings is also where you turn on Open ShapeDesk at login.</p>
         </details>
         <details>
           <summary>Why do my icons jump back right away?</summary>
@@ -713,7 +776,7 @@ Undo ↩ restored 16 of 16</code></pre>
         <svg viewBox="0 0 20 20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M10 3v10m-4-4 4 4 4-4M4 16.5h12"/></svg>
         Download for Mac
       </a>
-      <p class="meta">Shapes free · AI Sort with Pro · Version 1.1 · macOS 13 or later · Apple Silicon and Intel</p>
+      <p class="meta">Shapes free · AI Sort and Storage with Pro · Version 1.4 · macOS 13 or later · Apple Silicon and Intel</p>
       <div class="closing__support">
         <p>Shapes are free. If ShapeDesk makes you smile, a coffee keeps it going.</p>
         <a class="button-coffee" href="https://buymeacoffee.com/anup.tbc">

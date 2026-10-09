@@ -52,7 +52,10 @@ final class SortingViewModel: ObservableObject {
         #endif
     }
 
+    var notify: (String, String) -> Void = { _, _ in }
     var maySort: Bool { entitlement?.active == true && (entitlement?.remaining ?? 0) > 0 }
+    /// Storage tools use no AI checks, so an active subscription is enough.
+    var hasStorageAccess: Bool { entitlement?.active == true }
     /// A purchase only counts as a checkout once Stripe gave it a session URL.
     /// A leftover secret from a failed coupon redeem is not a pending checkout.
     var hasPendingCheckout: Bool { pendingPurchase?.checkoutURL != nil }
@@ -393,9 +396,11 @@ final class SortingViewModel: ObservableObject {
 
     func start(onFinish: @escaping @MainActor () -> Void) {
         guard !isBusy, !isLoading, maySort, let client, let credentials else { showSettings = true; return }
-        let classifier = HostedClassifier(client: client, credentials: credentials, onUsage: { [weak self] usage in
+        let hosted = HostedClassifier(client: client, credentials: credentials, onUsage: { [weak self] usage in
             await self?.receive(usage)
         }, onFailure: { [weak self] error in await self?.receive(error) })
+        let classifier: any FileClassifying = UserDefaults.standard.bool(forKey: AppSettings.Key.localRules)
+            ? RulesFirstClassifier(fallback: hosted) : hosted
         isBusy = true
         isUndoing = false
         statistics = SortStatistics()
@@ -437,6 +442,8 @@ final class SortingViewModel: ObservableObject {
         isBusy = false
         operation = nil
         onFinish()
+        if isUndoing { notify("Undo finished", undoStatistics.message) }
+        else { notify("AI Sort finished", statistics.message) }
     }
 
     private func refreshAccount() async {
