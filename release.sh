@@ -11,6 +11,19 @@ APP=build/ShapeDesk.app
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS"
 cp "$BIN/ShapeDesk" "$APP/Contents/MacOS/ShapeDesk"
+
+# The executable's deployment target (macOS 13) is stamped into
+# LC_BUILD_VERSION's `sdk` field instead of the SDK it was actually built
+# with. AppKit reads that stamp for linked-on-or-after behavior, so the app
+# renders with legacy control metrics — bordered buttons clamp to a fixed
+# height and the Shapes grid crunches. Restamp it with the real SDK so the
+# controls look right on current macOS.
+SDK_VERS="$(xcrun --sdk macosx --show-sdk-version)"
+MINOS_VERS="$(vtool -show-build "$APP/Contents/MacOS/ShapeDesk" | awk '/minos/{print $2; exit}')"
+vtool -set-build-version macos "$MINOS_VERS" "$SDK_VERS" \
+    -output "$APP/Contents/MacOS/ShapeDesk.stamped" "$APP/Contents/MacOS/ShapeDesk"
+mv "$APP/Contents/MacOS/ShapeDesk.stamped" "$APP/Contents/MacOS/ShapeDesk"
+
 cp Info.plist "$APP/Contents/Info.plist"
 ./icon.sh "$APP" || { echo "error: could not compile AppIcon.icon (needs Xcode 26 or later)" >&2; exit 1; }
 
