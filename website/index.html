@@ -24,7 +24,8 @@
   <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
   <link rel="preload" href="/fonts/gabarito.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/css/site.css">
-  <script type="module" src="/js/site.js"></script>
+  <link rel="stylesheet" href="/css/workspace.css">
+  <script type="module" src="/js/workspace.js"></script>
 
   <!-- Vercel Web Analytics; Vercel serves the script, so it 404s on a local server. -->
   <script>
@@ -58,10 +59,8 @@
   }
   </script>
 </head>
-<body>
-  <!-- Shared folder artwork for every desktop icon. Not display:none, which
-       would stop the gradients from rendering through <use>. -->
-  <svg class="sprite" aria-hidden="true" focusable="false">
+<body class="workspace-page">
+<svg class="sprite" aria-hidden="true" focusable="false">
     <defs>
       <linearGradient id="folder-back" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0" stop-color="#3f9ced"/>
@@ -141,95 +140,22 @@
     </defs>
   </svg>
 
-  <header class="menubar">
-    <nav class="menubar__left" aria-label="Site">
-      <a class="menubar__app" href="#top">ShapeDesk</a>
-      <a class="menubar__item menubar__item--mid" href="#how">How it works</a>
-      <a class="menubar__item" href="#ai-sort">AI Sort</a>
-      <a class="menubar__item menubar__item--storage" href="#storage">Storage</a>
-      <a class="menubar__item" href="#pro">Pro</a>
-      <a class="menubar__item menubar__item--mid" href="#install">Install</a>
-      <a class="menubar__item menubar__item--wide" href="#faq">FAQ</a>
-      <a class="menubar__item menubar__item--wide" href="#whats-new">What's new</a>
-    </nav>
-    <div class="menubar__right">
-      <a class="menubar__item" href="/account">Account</a>
-      <a class="menubar__coffee" href="https://buymeacoffee.com/anup.tbc">
-        <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#cup"/></svg>
-        <span class="menubar__coffee-label">Buy me a coffee</span>
-      </a>
-      <button class="menubar__status" id="panel-toggle" type="button"
-              aria-controls="panel" aria-expanded="true" aria-label="ShapeDesk controls">
-        <svg viewBox="0 0 16 16" aria-hidden="true">
-          <rect x="1.5" y="1.5" width="3.6" height="3.6" rx=".9" fill="currentColor"/>
-          <g fill="none" stroke="currentColor" stroke-width="1.1">
-            <rect x="6.2" y="2" width="3.6" height="3.6" rx=".9"/><rect x="10.9" y="2" width="3.6" height="3.6" rx=".9"/>
-            <rect x="1.5" y="6.7" width="3.6" height="3.6" rx=".9"/><rect x="6.2" y="6.7" width="3.6" height="3.6" rx=".9"/><rect x="10.9" y="6.7" width="3.6" height="3.6" rx=".9"/>
-            <rect x="1.5" y="11.4" width="3.6" height="3.6" rx=".9"/><rect x="6.2" y="11.4" width="3.6" height="3.6" rx=".9"/><rect x="10.9" y="11.4" width="3.6" height="3.6" rx=".9"/>
-          </g>
-        </svg>
-      </button>
-      <svg class="menubar__wifi" viewBox="0 0 18 14" aria-hidden="true">
-        <path fill="currentColor" d="M9 13.2a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM4.9 8.6l-1-1.1a7.3 7.3 0 0 1 10.2 0l-1 1.1a5.8 5.8 0 0 0-8.2 0zM2.1 5.7 1 4.6a11.3 11.3 0 0 1 16 0l-1.1 1.1a9.8 9.8 0 0 0-13.8 0z"/>
-      </svg>
-      <time class="menubar__clock" id="clock"></time>
-    </div>
-  </header>
 
-  <div class="notice" id="download-notice" role="status" hidden>
-    <button class="notice__close" type="button" aria-label="Dismiss">
-      <svg viewBox="0 0 12 12" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" d="m3.5 3.5 5 5m0-5-5 5"/></svg>
-    </button>
-    <img class="notice__icon" src="/img/app-icon.webp" width="40" height="40" alt="">
-    <div class="notice__body">
-      <p class="notice__title">ShapeDesk.zip is downloading</p>
-      <p>Thanks for trying ShapeDesk. Shapes are free, and a coffee keeps it going.</p>
-      <div class="notice__actions">
-        <a class="button-coffee button-coffee--small" href="https://buymeacoffee.com/anup.tbc" target="_blank" rel="noopener">
-          <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#cup"/></svg>
-          Buy me a coffee
-        </a>
-        <a class="notice__link" href="#install">How to open it</a>
-      </div>
-    </div>
-  </div>
-
-  <main>
-    <section class="desktop" id="top" aria-labelledby="hero-title">
-      <div class="wallpaper" aria-hidden="true">
-        <svg viewBox="0 0 1440 600" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="dune-a" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#ff9a5c" stop-opacity=".55"/>
-              <stop offset="1" stop-color="#b8405a" stop-opacity="0"/>
-            </linearGradient>
-            <linearGradient id="dune-b" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#d9547a" stop-opacity=".5"/>
-              <stop offset="1" stop-color="#3a1a40" stop-opacity="0"/>
-            </linearGradient>
-          </defs>
-          <path fill="url(#dune-a)" d="M0 380C260 300 520 290 760 340s470 70 680-10v270H0z"/>
-          <path fill="url(#dune-b)" d="M0 470c300-90 620-70 900-10s400 40 540-20v160H0z"/>
-        </svg>
-      </div>
-
-      <div class="hero-copy">
-        <h1 id="hero-title">Your desktop,<br>in any shape.</h1>
-        <div class="hero-copy__aside">
-          <a class="hero-pill" href="#whats-new">New in 1.4 · Storage, Settings &amp; fewer AI checks</a>
-          <p>Turn your real desktop icons into a heart, a star, a spiral, or any word you type, for free. Add Pro to sort loose files into folders, find duplicate copies and see what's taking up space. All from your Mac's menu bar.</p>
-          <div class="cta-row">
-            <a class="button-download" href="https://github.com/addressanup/shapedesk/releases/latest/download/ShapeDesk.zip">
-              <svg viewBox="0 0 20 20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M10 3v10m-4-4 4 4 4-4M4 16.5h12"/></svg>
-              Download for Mac
-            </a>
-            <a class="link-quiet" href="https://github.com/addressanup/shapedesk">View source on GitHub</a>
-          </div>
-          <p class="meta">v1.4 · macOS 13+ · Apple Silicon &amp; Intel</p>
-        </div>
-      </div>
-
-      <div class="stage" id="stage" aria-hidden="true"></div>
+<a class="skip-link" href="#content">Skip to content</a>
+<header class="appbar">
+ <a class="brand" href="#top"><svg viewBox="0 0 16 16" aria-hidden="true"><use href="#em-grid"/></svg>ShapeDesk<span>1.4</span></a>
+ <p class="appbar-note">A little order. A little play.</p>
+ <div class="appbar-actions"><a class="account-link" href="/account">My account</a><a class="download-link" href="/download">Download for Mac <span aria-hidden="true">↗</span></a></div>
+</header>
+<div class="shell">
+ <aside class="rail"><div class="rail-top"><p class="eyebrow">Make yourself at home</p><nav aria-label="Explore ShapeDesk"><a href="#top" data-route="top" aria-current="page"><span class="nav-number">01</span>Shapes</a><a href="#ai-sort" data-route="ai-sort"><span class="nav-number">02</span>AI Sort</a><a href="#storage" data-route="storage"><span class="nav-number">03</span>Storage<span class="nav-new">NEW</span></a><a href="#settings" data-route="settings"><span class="nav-number">04</span>Settings</a><a href="#watch" data-route="watch"><span class="nav-number">05</span>Watch demo</a><a href="#pro" data-route="pro"><span class="nav-number">06</span>Free & Pro</a><a href="#help" data-route="help"><span class="nav-number">07</span>Install & help</a></nav></div>
+ <div class="rail-bottom"><a href="https://github.com/addressanup/shapedesk" target="_blank" rel="noopener">Open source <span aria-hidden="true">↗</span></a><a href="https://buymeacoffee.com/anup.tbc" target="_blank" rel="noopener">Buy me a coffee <span aria-hidden="true">↗</span></a><p>Built for the Mac.<br>Made to feel like yours.</p></div></aside>
+ <div class="mobile-nav"><label for="view-select">Explore</label><select id="view-select"><option value="top">Shapes</option><option value="ai-sort">AI Sort</option><option value="storage">Storage</option><option value="settings">Settings</option><option value="watch">Watch demo</option><option value="pro">Free & Pro</option><option value="help">Install & help</option></select><span class="mobile-version">macOS 13+</span></div>
+ <main id="content" tabindex="-1">
+ <section class="view desktop" id="top" aria-labelledby="hero-title">
+  <div class="wallpaper" aria-hidden="true"></div>
+  <div class="play-heading"><p class="eyebrow">Free to play. Yours to arrange.</p><h1 id="hero-title" tabindex="-1">Your desktop,<br> in any shape.</h1><p>Give your real icons a little personality.<br>Pick a shape. Or spell something.</p></div>
+        <div class="stage" id="stage" aria-hidden="true"></div>
       <div class="icons" id="icons" aria-hidden="true"></div>
 
       <div class="panel" id="panel" data-open="true" role="region" aria-label="ShapeDesk controls">
@@ -280,100 +206,17 @@
 
         <div class="panel__footer">
           <button class="panel__button" id="reset" type="button" title="Re-arrange icons into Finder's plain sorted grid">Reset to grid</button>
-          <button class="panel__button" id="close" type="button">Close</button>
+
         </div>
       </div>
 
-      <p class="desktop-note">These <span id="note-count">40</span> folders are pretend. On your Mac, ShapeDesk moves your real ones.<span class="desktop-note__drag"> Drag a few around, then pick a shape.</span></p>
-    </section>
+      <p class="desktop-note">Interactive preview · <span id="note-count">40</span> pretend folders. Your Mac uses real ones.</p>
 
-    <section class="section release" id="whats-new" aria-labelledby="release-title">
-      <div class="section__head">
-        <h2 id="release-title">New in ShapeDesk 1.4</h2>
-        <p>More ways to organize your files, and fewer things to do by hand.</p>
-      </div>
-      <div class="how__grid release__grid">
-        <article class="how__item">
-          <p class="meta">Storage · Pro</p>
-          <h3><a href="#storage">See where the space goes</a></h3>
-          <p>Find large folders, set duplicate copies aside with undo, and review files and apps you haven't opened lately. Storage runs on your Mac and uses no AI checks.</p>
-        </article>
-        <article class="how__item">
-          <p class="meta">AI Sort · Pro</p>
-          <h3><a href="#local-sorting">Use fewer AI checks</a></h3>
-          <p>Obvious files, like screenshots, PDFs, code and camera photos with standard names, sort on your Mac. AI handles the ambiguous ones.</p>
-        </article>
-        <article class="how__item">
-          <p class="meta">Settings · Free</p>
-          <h3><a href="#settings">Set it up your way</a></h3>
-          <p>Open at login, choose a keyboard shortcut, get a notification when a job finishes, and find out when an update is ready.</p>
-        </article>
-      </div>
-      <p class="release__foot">Using more than one display? Shapes now follow the menu bar you click. <a href="https://github.com/addressanup/shapedesk/releases/tag/v1.4">Read the release notes <span aria-hidden="true">↗</span></a></p>
-    </section>
-
-    <section class="section video" aria-labelledby="video-title">
-      <div class="section__head">
-        <h2 id="video-title">Watch it on a real desktop</h2>
-        <p>Real folders on a real Mac turn into a heart and the word HELLO. Then AI Sort files a desktop full of loose files into folders, and Undo puts them back.</p>
-      </div>
-      <figure class="video__frame">
-        <video controls playsinline preload="none" poster="/media/demo-poster.jpg" width="1280" height="720">
-          <source src="/media/demo.mp4" type="video/mp4">
-          <a href="/media/demo.mp4">Download the demo video (MP4, 6 MB)</a>
-        </video>
-        <figcaption class="meta">1:36 · with sound · Shapes &amp; AI Sort demo, recorded before v1.4</figcaption>
-      </figure>
-    </section>
-
-    <section class="section how" id="how" aria-labelledby="how-title">
-      <div class="section__head">
-        <h2 id="how-title">How it moves your icons</h2>
-        <p>ShapeDesk works out a spot for every icon on your desktop, then asks Finder to move it there.</p>
-      </div>
-      <div class="how__grid">
-        <article class="how__item">
-          <figure class="figure">
-            <svg class="figure__heart" id="figure-heart" viewBox="0 0 320 240" role="img" aria-label="40 dots spaced evenly around a heart curve"></svg>
-            <figcaption class="meta">40 points on x = 16 sin³t</figcaption>
-          </figure>
-          <h3>Shapes are curves</h3>
-          <p>Each shape is a math curve, like the classic heart. ShapeDesk spaces your icons along it, clear of the menu bar and Dock. With multiple displays, it uses the screen whose menu bar you clicked.</p>
-        </article>
-        <article class="how__item">
-          <figure class="figure">
-            <canvas class="figure__word" id="figure-word" width="640" height="480" role="img" aria-label="The letters H and I thinned to single-pixel lines, with points on their ends and along their strokes"></canvas>
-            <figcaption class="meta"><span class="dot dot--ember"></span>ends and corners first <span class="dot dot--folder"></span>then the rest</figcaption>
-          </figure>
-          <h3>Words are strokes</h3>
-          <p>Words are drawn in a thin font, then thinned to one-pixel lines. Icons go on the ends and corners of each stroke first, because that's what makes a letter readable, then fill the gaps evenly.</p>
-        </article>
-        <article class="how__item">
-          <figure class="figure figure--code">
-<pre><code><span class="tok-key">tell</span> application <span class="tok-str">"Finder"</span>
-  <span class="tok-key">ignoring</span> application responses
-    <span class="tok-key">set</span> desktop position <span class="tok-dim">¬</span>
-      <span class="tok-key">of</span> item <span class="tok-str">"Invoices"</span> <span class="tok-dim">¬</span>
-      <span class="tok-key">to</span> {812, 344}
-    <span class="tok-dim">… one line per icon</span>
-  <span class="tok-key">end ignoring</span>
-  <span class="tok-key">count</span> items <span class="tok-key">of</span> desktop
-<span class="tok-key">end tell</span></code></pre>
-            <figcaption class="meta">One of 14 frames</figcaption>
-          </figure>
-          <h3>Finder does the moving</h3>
-          <p>ShapeDesk asks Finder to move each icon, the same way an AppleScript would. It sends 14 eased steps without waiting on each reply, so 40 icons glide into place in about a second.</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="section sort" id="ai-sort" aria-labelledby="ai-sort-title">
-      <div class="section__head">
-        <h2 id="ai-sort-title">A place for every file.</h2>
-        <p>AI Sort is part of ShapeDesk Pro. It sorts loose files on your Desktop or in the folder open in Finder into eight categories. Obvious files sort locally; AI checks the rest. Undo puts your files back.</p>
-      </div>
-
-      <div class="sortdesk" id="sortdesk">
+  <a class="new-feature" href="#storage"><span>New in 1.4</span> Make room with Storage <b aria-hidden="true">↗</b></a>
+ </section>
+ <section class="view" id="ai-sort" hidden>
+ <div class="view-head"><div><p class="eyebrow">SHAPEDESK PRO</p><h2 tabindex="-1">A place for every file.</h2></div><p>Obvious files sort on your Mac. AI handles the rest. Try a sort, then put everything back.</p></div>
+       <div class="sortdesk" id="sortdesk">
         <div class="sortdesk__bar" aria-hidden="true">
           <span class="sortdesk__menulet"><svg viewBox="0 0 16 16"><use href="#em-grid"/></svg>ShapeDesk</span>
           <span class="sortdesk__clock">Tue 9:41 AM</span>
@@ -386,7 +229,7 @@
           <div class="aiwin__toolbar">
             <svg class="aiwin__glyph" viewBox="0 0 16 16" aria-hidden="true"><use href="#em-grid"/></svg>
             <span class="aiwin__app">ShapeDesk</span>
-            <span class="aiwin__seg"><a href="#how">Shapes</a><span class="is-on">AI Sort</span><a href="#storage">Storage</a></span>
+            <span class="aiwin__seg"><a href="#top">Shapes</a><span class="is-on">AI Sort</span><a href="#storage">Storage</a></span>
           </div>
           <div class="aiwin__body">
             <div class="aiwin__intro">
@@ -441,84 +284,14 @@
           </div>
         </div>
       </div>
-      <p class="desktop-note">Try Sort Desktop, then Undo. These files, scores and check counts are pretend; this demo uses no real files or AI checks.</p>
+      <p class="desktop-note">Interactive preview · Sample files. No real files or AI checks are used.</p>
 
-      <div class="local-sorting" id="local-sorting">
-        <h3>Obvious files. Zero AI checks.</h3>
-        <p>With “Sort obvious files on this Mac” on by default, standard-named screenshots and recordings, documents, source code, archives and camera photos go straight to their folders. Ambiguous files still go to AI. Both use the same safe moves and undo; you can change this in Settings.</p>
-      </div>
 
-      <div class="how__grid how__grid--four">
-        <article class="how__item">
-          <figure class="figure">
-            <div class="figure__frame figure__frame--bars" role="img" aria-label="Four example AI confidence scores: meeting notes.txt at 0.88 and moodboard-02.jpg at 0.93 pass the dashed 0.8 line; export (3) at 0.57 and untitled at 0.41 stay below it">
-              <span class="bars__name">meeting notes.txt</span><span class="bars__track bars__track--mark"><i style="--w:88%"></i></span><span class="bars__val">0.88</span>
-              <span class="bars__name">moodboard-02.jpg</span><span class="bars__track"><i style="--w:93%"></i></span><span class="bars__val">0.93</span>
-              <span class="bars__name">export (3)</span><span class="bars__track"><i class="is-below" style="--w:57%"></i></span><span class="bars__val">0.57</span>
-              <span class="bars__name">untitled</span><span class="bars__track"><i class="is-below" style="--w:41%"></i></span><span class="bars__val">0.41</span>
-            </div>
-            <figcaption class="meta">Example scores · moves only above 0.8</figcaption>
-          </figure>
-          <h3>A high bar for AI moves</h3>
-          <p>When a file needs AI, it gets one of eight folders and a confidence score. It moves only above 80%. Lower scores and errors leave it in place. Obvious files use local rules instead.</p>
-        </article>
-        <article class="how__item">
-          <figure class="figure figure--code">
-<pre><code>{
-  <span class="tok-key">"name"</span>: <span class="tok-str">"moodboard-02.jpg"</span>,
-  <span class="tok-key">"fileExtension"</span>: <span class="tok-str">"jpg"</span>,
-  <span class="tok-key">"byteSize"</span>: <span class="tok-dim">184320</span>,
-  <span class="tok-key">"contentType"</span>: <span class="tok-str">"public.jpeg"</span>,
-  <span class="tok-key">"mimeType"</span>: <span class="tok-str">"image/jpeg"</span>,
-  <span class="tok-key">"createdAt"</span>: <span class="tok-str">"2026-10-02T09:14:38Z"</span>,
-  <span class="tok-key">"modifiedAt"</span>: <span class="tok-str">"2026-10-04T16:03:12Z"</span>
-}</code></pre>
-            <figcaption class="meta">Only when a file needs AI</figcaption>
-          </figure>
-          <h3>Names, not contents</h3>
-          <p>AI Sort sends a file's name, type, size and dates to ShapeDesk's service, which asks TypeSafe's Jev model to choose a folder. File contents and full paths never leave your Mac, and obvious files, like default-named screenshots, are sorted on your Mac without being sent at all.</p>
-        </article>
-        <article class="how__item">
-          <figure class="figure figure--code">
-<pre><code>Moved report.pdf → Docs/report (1).pdf
-Kept brief.key — open in Keynote
-Kept clip.mov.download — still downloading
-Undo ↩ restored 16 of 16</code></pre>
-            <figcaption class="meta">Journaled moves · undo survives restarts</figcaption>
-          </figure>
-          <h3>Undo, even offline</h3>
-          <p>Undo last sort puts every file back, even after a restart and without a connection. ShapeDesk never overwrites a file, and it leaves files alone while they're open, locked, downloading or just changed.</p>
-        </article>
-        <article class="how__item">
-          <figure class="figure">
-            <div class="figure__frame figure__frame--menus" aria-hidden="true">
-              <ul class="mock__menu">
-                <li><span class="mock__check"></span>Open</li>
-                <li><span class="mock__check"></span>Move to Trash</li>
-                <li class="mock__sep"></li>
-                <li><span class="mock__check"></span>Compress</li>
-                <li class="is-open"><span class="mock__check"></span>Services<span class="mock__chev">›</span></li>
-                <li><span class="mock__check"></span>Rename…</li>
-              </ul>
-              <ul class="mock__menu mock__menu--sub">
-                <li class="is-picked"><span class="mock__check"></span>Sort with ShapeDesk</li>
-                <li><span class="mock__check"></span>New Terminal at Folder</li>
-              </ul>
-            </div>
-          </figure>
-          <h3>Right in Finder</h3>
-          <p>Open a folder in Finder, then open AI Sort from the menu bar: ShapeDesk follows that folder. Use Desktop switches back. Or select files from one folder, right-click and choose Services → Sort with ShapeDesk. Only files directly inside the folder are sorted.</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="section storage" id="storage" aria-labelledby="storage-title">
-      <div class="section__head">
-        <h2 id="storage-title">See what's using your space.</h2>
-        <p>Storage is part of ShapeDesk Pro. For the folder open in Finder, or your Desktop, it shows what takes the most room, which files are exact copies, and what you haven't opened in months. It all happens on your Mac; no file details leave it.</p>
-      </div>
-      <div class="how__grid">
-        <article class="how__item">
+ </section>
+ <section class="view" id="storage" hidden>
+ <div class="view-head"><div><p class="eyebrow">NEW IN 1.4 · PRO</p><h2 tabindex="-1">Make room for what matters.</h2></div><p>Folder sizes, identical copies, and things you haven’t opened lately. All checked locally. No AI checks used.</p></div>
+ <div class="segmented" role="tablist" aria-label="Storage tools"><button role="tab" id="storage-tab-0" aria-controls="storage-pane-0" aria-selected="true" tabindex="0" data-storage="0">Sizes</button><button role="tab" id="storage-tab-1" aria-controls="storage-pane-1" aria-selected="false" tabindex="-1" data-storage="1">Duplicates</button><button role="tab" id="storage-tab-2" aria-controls="storage-pane-2" aria-selected="false" tabindex="-1" data-storage="2">Not Opened</button></div>
+ <div class="storage-panes"><article class="storage-pane" role="tabpanel" id="storage-pane-0" aria-labelledby="storage-tab-0"><div class="storage-art">
           <figure class="figure">
             <div class="figure__frame figure__frame--bars figure__frame--sizes" role="img" aria-label="Five example folders, largest first: Client work 18.4 GB, Music stems 7.9 GB, Backups 6.1 GB, Photos 2024 3.2 GB and Keynote assets 840 MB">
               <span class="bars__name">Client work</span><span class="bars__track"><i style="--w:100%"></i></span><span class="bars__val">18.4 GB</span>
@@ -529,10 +302,9 @@ Undo ↩ restored 16 of 16</code></pre>
             </div>
             <figcaption class="meta">Example folder · largest first</figcaption>
           </figure>
-          <h3>Biggest first</h3>
+          </div><div class="storage-copy"><h3>Biggest first</h3>
           <p>Sizes lists everything in the folder, largest first, with the space each item really takes on disk. A folder's size includes everything inside it, and clicking one shows what's in there.</p>
-        </article>
-        <article class="how__item">
+        </div></article><article class="storage-pane" role="tabpanel" id="storage-pane-1" aria-labelledby="storage-tab-1" hidden><div class="storage-art">
           <figure class="figure">
             <div class="figure__frame figure__frame--dups" role="img" aria-label="An example duplicate group: Quarterly report.pdf stays, and Quarterly report copy.pdf and Quarterly report (1).pdf move to the Duplicates folder">
               <div class="dupcard">
@@ -545,10 +317,9 @@ Undo ↩ restored 16 of 16</code></pre>
             </div>
             <figcaption class="meta">Byte-for-byte copies · one stays put</figcaption>
           </figure>
-          <h3>Copies, set aside</h3>
+          </div><div class="storage-copy"><h3>Copies, set aside</h3>
           <p>Duplicates finds files with identical contents and lets you choose which copy to keep. The others move into a Duplicates folder beside them. Undo last move puts them back, even without Pro, and is separate from AI Sort's undo.</p>
-        </article>
-        <article class="how__item">
+        </div></article><article class="storage-pane" role="tabpanel" id="storage-pane-2" aria-labelledby="storage-tab-2" hidden><div class="storage-art">
           <figure class="figure">
             <div class="figure__frame figure__frame--bars figure__frame--unused" role="img" aria-label="Example days since last opened, against a dashed 90-day line: Blender.app, over a year, Course notes.pdf, 230 days, and GarageBand.app, 168 days, are past it; Figma.app, 12 days, and Invoice-0423.pdf, 3 days, are not">
               <span class="bars__name">Blender.app</span><span class="bars__track bars__track--mark"><i style="--w:100%"></i></span><span class="bars__val">1 yr+</span>
@@ -559,323 +330,55 @@ Undo ↩ restored 16 of 16</code></pre>
             </div>
             <figcaption class="meta">Days since last opened · listed after 90</figcaption>
           </figure>
-          <h3>Not opened lately</h3>
+          </div><div class="storage-copy"><h3>Not opened lately</h3>
           <p>Review files in the current folder and installed apps you haven't opened in 30 days, 90 days, 6 months or a year. Running apps are left out. You choose what to move to Trash through Finder, where Put Back works until you empty it.</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="section settings" id="settings" aria-labelledby="settings-title">
-      <div class="section__head">
-        <h2 id="settings-title">Settings, right in the menu bar.</h2>
-        <p>Click the gear in ShapeDesk to make it fit your day. Shortcuts, launch at login, notifications and update checks are available without Pro.</p>
-      </div>
-      <div class="settings__grid">
-        <article class="settings__shortcut">
-          <p class="meta">Your shortcut, from any app</p>
-          <div class="settings__keys" role="group" aria-label="Control Option Command D">
-            <kbd aria-label="Control">⌃</kbd><kbd aria-label="Option">⌥</kbd><kbd aria-label="Command">⌘</kbd><kbd>D</kbd>
-          </div>
-          <h3>Open from any app</h3>
-          <p>Press ⌃⌥⌘D to open or close the panel. Record your own combination in Settings, or remove the shortcut altogether.</p>
-        </article>
-        <div class="pro__items">
-          <article class="pro__item">
-            <h3>Ready when you log in</h3>
-            <p>Turn on Open ShapeDesk at login and it's waiting in your menu bar when you start your Mac.</p>
-          </article>
-          <article class="pro__item">
-            <h3>Know when it's done</h3>
-            <p>Close the panel and carry on. A notification tells you when a sort, undo or duplicate move finishes. Click it to see the result, or turn notifications off in Settings.</p>
-          </article>
-          <article class="pro__item">
-            <h3>Catch the next update</h3>
-            <p>ShapeDesk can check for new releases and show an update link in the panel. You choose when to download and install. Use Check now in Settings anytime.</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="section pro" id="pro" aria-labelledby="pro-title">
-      <div class="section__head">
-        <h2 id="pro-title">ShapeDesk Pro</h2>
-        <p>Shapes, words and Settings stay free. Pro adds AI Sort and Storage; undo stays available even after Pro ends.</p>
-      </div>
-      <div class="pro__grid">
-        <div class="plancard" aria-label="Pretend copy of the Account page inside ShapeDesk's menu bar dropdown">
-          <div class="aiwin__toolbar">
-            <svg class="aiwin__glyph" viewBox="0 0 16 16" aria-hidden="true"><use href="#em-grid"/></svg>
-            <span class="aiwin__app">ShapeDesk</span>
-            <span class="aiwin__seg"><a href="#ai-sort">AI Sort</a><span class="is-on">Account</span></span>
-          </div>
-          <div class="plancard__body">
-            <div class="aiwin__intro">
-              <p class="aiwin__h">A calmer desktop, included.</p>
-              <p class="aiwin__sub">ShapeDesk Pro</p>
-            </div>
-            <p class="plancard__price"><b id="plan-price">$5</b><span>/ month</span><span class="status-chip" id="plan-status" hidden>Opening soon</span></p>
-            <ul class="plancard__benefits">
-              <li><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" d="M1.8 4.4a1.6 1.6 0 0 1 1.6-1.6h3l1.2 1.2h6a1.6 1.6 0 0 1 1.6 1.6v6a1.6 1.6 0 0 1-1.6 1.6h-10a1.6 1.6 0 0 1-1.6-1.6z"/><path fill="currentColor" d="M11.6 8.6a2.3 2.3 0 1 0 0 4.6 2.3 2.3 0 0 0 0-4.6zm-.8 2.3.9-1.5m-.9 1.5-.9-1.5m.9 1.5 1.5.9m-1.5-.9-1.5.9"/></svg><span><b id="plan-checks">1,000</b> AI file checks each month</span></li>
-              <li><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.6" y="1.6" width="12.8" height="12.8" rx="3.4" fill="none" stroke="currentColor" stroke-width="1.3"/><path fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" d="M5.2 8.4a2.8 2.8 0 0 0 5.6 0M5 5.4h.01M11 5.4h.01" transform="translate(0 .3)"/></svg><span>Sort from Finder or the app</span></li>
-              <li><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" d="M6.4 3.4 3.4 6.4l3 3M3.6 6.4h6.2a4.2 4.2 0 0 1 0 8.4h-3"/></svg><span>Safe moves and undo, even offline</span></li>
-              <li><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.6" y="4" width="12.8" height="8" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.3"/><path stroke="currentColor" stroke-width="1.3" stroke-linecap="round" d="M4.4 8h4.4"/><circle cx="11.4" cy="8" r="1" fill="currentColor"/></svg><span>Storage: sizes, duplicates, unopened files</span></li>
-              <li><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.6" y="2.4" width="12.8" height="8.6" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.3"/><path stroke="currentColor" stroke-width="1.3" stroke-linecap="round" d="M6 13.4h4M8 11v2.4"/></svg><span>One subscription, up to <b id="plan-macs">3</b> Macs</span></li>
-            </ul>
-            <a class="button-download" href="https://github.com/addressanup/shapedesk/releases/latest/download/ShapeDesk.zip">
-              <svg viewBox="0 0 20 20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M10 3v10m-4-4 4 4 4-4M4 16.5h12"/></svg>
-              Download ShapeDesk
-            </a>
-            <p class="plancard__note" id="plan-note">Subscribe from AI Sort → Account. Checkout opens in your browser.</p>
-          </div>
-        </div>
-        <div class="pro__items">
-          <article class="pro__item">
-            <h3>Subscribe in ShapeDesk</h3>
-            <p>Open the menu bar dropdown, go to AI Sort → Account, then Subscribe with Stripe. Checkout opens in your browser, and ShapeDesk activates when you come back.</p>
-          </article>
-          <article class="pro__item">
-            <h3>Add your other Macs</h3>
-            <p>Copy the recovery key from Account. On another Mac, choose Already subscribed? Restore access and paste it. One subscription covers up to 3 Macs.</p>
-          </article>
-          <article class="pro__item">
-            <h3>Have a coupon?</h3>
-            <p>In AI Sort → Account, open Have a coupon?, enter your code and choose Redeem for Pro. Coupon access needs no payment card. Another valid coupon extends existing coupon access; paid subscribers can't redeem one.</p>
-          </article>
-          <article class="pro__item">
-            <h3>Manage it from anywhere</h3>
-            <p>Sign in at <a href="/account">shapedesk.space/account</a> with your recovery key to check usage, free up a Mac, or open billing. <a class="link-quiet" href="/account">Go to your account</a></p>
-          </article>
-        </div>
-      </div>
-      <p class="pro__fine">Each AI check covers one file sent to AI, including files that stay put. Failed checks use no quota. Storage and files sorted by local rules are included with Pro and use no AI checks. Checks reset on the 1st of each month (UTC) and don't roll over. Cancel anytime in Manage billing; Pro stays on until the end of the period you've paid for.</p>
-    </section>
-
-    <section class="section install" id="install" aria-labelledby="install-title">
-      <div class="section__head">
-        <h2 id="install-title">Install it in about a minute</h2>
-        <p>ShapeDesk isn't notarized by Apple yet, so macOS asks you to confirm it the first time you open it. You only do this once.</p>
-      </div>
-
-      <ol class="steps">
-        <li class="step">
-          <div class="step__text">
+        </div></article></div>
+ <p class="view-foot">Follows your Finder folder, or your Desktop. You choose every move.</p>
+ </section>
+ <section class="view" id="settings" hidden>
+ <div class="view-head"><div><p class="eyebrow">NEW IN 1.4 · FREE</p><h2 tabindex="-1">Fits the way you work.</h2></div><p>One gear in your menu bar. All the everyday controls, together.</p></div>
+ <div class="settings-layout"><div class="shortcut-hero"><p class="eyebrow">OPEN FROM ANY APP</p><div class="keys" aria-label="Control Option Command D"><kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>D</kbd></div><h3>Your shortcut.<br>Your rhythm.</h3><p>Use ⌃⌥⌘D, record your own combination, or remove it in Settings.</p></div>
+ <div class="settings-menu" role="group" aria-label="Settings feature guide"><button data-setting="0" aria-pressed="true"><span>Open at login</span><span aria-hidden="true">↗</span></button><button data-setting="1" aria-pressed="false"><span>Completion notifications</span><span aria-hidden="true">↗</span></button><button data-setting="2" aria-pressed="false"><span>Sort obvious files locally</span><span aria-hidden="true">↗</span></button><button data-setting="3" aria-pressed="false"><span>Check for updates</span><span aria-hidden="true">↗</span></button><div class="setting-detail" aria-live="polite"><p class="eyebrow">READY WHEN YOU ARE</p><p id="setting-description">Turn on Open ShapeDesk at login in the app. It will be waiting in your menu bar when you start your Mac.</p></div></div></div>
+ <p class="view-foot">These are feature explanations. Change your preferences in the Mac app.</p>
+ </section>
+ <section class="view" id="watch" hidden>
+ <div class="view-head"><div><p class="eyebrow">THE REAL MAC APP</p><h2 tabindex="-1">See it all come together.</h2></div><p>Shapes, sorting, Storage and Settings. A tour of ShapeDesk 1.4 with real app footage.</p></div>
+ <figure class="watch-player"><video id="demo-video" controls playsinline preload="metadata" poster="/media/demo-v1.4-poster.jpg" width="1920" height="1080"><source src="/media/demo-v1.4.mp4" type="video/mp4"><a href="/media/demo-v1.4.mp4">Download the demo</a></video></figure>
+ <div class="watch-chapters" aria-label="Video chapters"><button data-time="0">Shapes</button><button data-time="35.632">AI Sort</button><button data-time="69.3">Finder</button><button data-time="86.5">Sizes</button><button data-time="97">Duplicates</button><button data-time="115">Not Opened</button><button data-time="124.3">Local sorting</button><button data-time="134.4">Settings</button></div><p class="view-foot">With music · Captions on screen · <a href="/media/demo-v1.4.mp4" download>Download the video</a></p>
+ </section>
+ <section class="view" id="pro" hidden>
+ <div class="view-head"><div><p class="eyebrow">START WITH A LITTLE PLAY</p><h2 tabindex="-1">Start free. Go Pro.</h2></div><p>Keep the shapes forever. Add Pro when you’re ready for a calmer desktop.</p></div>
+ <div class="segmented plan-tabs" role="tablist" aria-label="Compare plans"><button role="tab" aria-selected="false" aria-controls="free-plan" data-plan="free" tabindex="-1">Free</button><button role="tab" aria-selected="true" aria-controls="pro-plan" data-plan="pro">Pro</button></div>
+ <div class="plan-layout" data-plan-active="pro"><article class="plan-free" id="free-plan"><p class="eyebrow">SHAPEDESK</p><h3>Free. Always.</h3><ul><li>Five shapes and any word</li><li>Size, animation and Reset to grid</li><li>Custom shortcut and Settings</li><li>Apple Silicon &amp; Intel · macOS 13+</li></ul><a class="text-action" href="/download">Download for Mac <span aria-hidden="true">↗</span></a></article>
+ <article class="plan-pro" id="pro-plan"><p class="eyebrow">SHAPEDESK PRO <span id="plan-status" hidden>Opening soon</span></p><p class="price"><b id="plan-price">$5</b><span>/ month</span></p><ul><li><b id="plan-checks">1,000</b> AI checks each month</li><li>AI Sort from the app or Finder</li><li>Storage: sizes, duplicates, unopened files</li><li>One subscription, up to <b id="plan-macs">3</b> Macs</li><li>Local sorting and Storage use no checks</li></ul><p id="plan-note">Subscribe in the app: AI Sort → Account.</p><a class="text-action" href="/account">Manage your account <span aria-hidden="true">↗</span></a></article></div>
+ <div class="pro-bottom"><p>Cancel anytime. Checks reset monthly. Undo stays available after Pro ends.</p><a href="#help-coupons">Have a coupon?</a></div>
+ </section>
+ <section class="view" id="help" hidden>
+ <div class="view-head"><div><p class="eyebrow">A LITTLE HELP</p><h2 tabindex="-1">Up and running.</h2></div><p>Installation, privacy, billing and the small things that make your desktop work.</p></div>
+ <div class="segmented" role="tablist" aria-label="Help sections"><button role="tab" aria-selected="true" aria-controls="install-guide" id="install-tab" data-help="install">Install</button><button role="tab" aria-selected="false" aria-controls="question-guide" id="questions-tab" tabindex="-1" data-help="questions">Questions</button></div>
+ <div class="help-body" id="install-guide" role="tabpanel" aria-labelledby="install-tab"><div class="step-progress" aria-label="Installation steps"><button data-step="0" aria-label="Step 1" aria-current="step">01</button><button data-step="1" aria-label="Step 2">02</button><button data-step="2" aria-label="Step 3">03</button><button data-step="3" aria-label="Step 4">04</button><button data-step="4" aria-label="Step 5">05</button></div><div class="install-pages"><article data-step-page="0">
             <h3>Download and unzip</h3>
             <p><a href="https://github.com/addressanup/shapedesk/releases/latest/download/ShapeDesk.zip">Download ShapeDesk.zip</a>, open it from your Downloads folder, then drag ShapeDesk into Applications.</p>
-          </div>
-        </li>
-
-        <li class="step">
-          <div class="step__text">
+          </article><article data-step-page="1" hidden>
             <h3>Open it once</h3>
             <p>Double-click ShapeDesk. macOS says it can't verify the app. Click <strong>Done</strong>, not Move to Trash.</p>
             <p class="step__aside">On macOS 13 or 14, Control-click ShapeDesk instead, choose Open, then click Open. You can skip to step 4.</p>
-          </div>
-          <div class="mock mock--alert" aria-hidden="true">
-            <div class="mock__appicon"></div>
-            <p class="mock__title">“ShapeDesk” Not Opened</p>
-            <p class="mock__body">Apple could not verify “ShapeDesk” is free of malware that may harm your Mac or compromise your privacy.</p>
-            <div class="mock__buttons mock__buttons--stack">
-              <span class="mock__btn mock__btn--focus">Done</span>
-              <span class="mock__btn">Move to Trash</span>
-            </div>
-          </div>
-        </li>
-
-        <li class="step">
-          <div class="step__text">
+          </article><article data-step-page="2" hidden>
             <h3>Allow it in System Settings</h3>
             <p>Open System Settings, go to <strong>Privacy &amp; Security</strong>, and scroll down to Security. Click <strong>Open Anyway</strong> next to the ShapeDesk message, confirm with Open Anyway once more, and enter your password.</p>
             <p class="step__aside">ShapeDesk opens and a grid icon appears in your menu bar.</p>
-          </div>
-          <div class="mock mock--settings" aria-hidden="true">
-            <p class="mock__section">Security</p>
-            <div class="mock__row">
-              <span>“ShapeDesk” was blocked to protect your Mac.</span>
-              <span class="mock__btn mock__btn--focus">Open Anyway</span>
-            </div>
-          </div>
-        </li>
-
-        <li class="step">
-          <div class="step__text">
+          </article><article data-step-page="3" hidden>
             <h3>Let it move Finder icons</h3>
             <p>The first time you pick a shape, macOS asks whether ShapeDesk can control Finder. Click <strong>Allow</strong>.</p>
             <p class="step__aside">Missed it? Turn it on in System Settings → Privacy &amp; Security → Automation → ShapeDesk → Finder. AI Sort may also ask to use your Desktop, Documents or Downloads folder; click Allow.</p>
-          </div>
-          <div class="mock mock--alert" aria-hidden="true">
-            <div class="mock__appicon"></div>
-            <p class="mock__title">“ShapeDesk” wants access to control “Finder”.</p>
-            <p class="mock__body">ShapeDesk needs to control Finder to arrange your desktop icons into shapes.</p>
-            <div class="mock__buttons">
-              <span class="mock__btn">Don’t Allow</span>
-              <span class="mock__btn mock__btn--focus">Allow</span>
-            </div>
-          </div>
-        </li>
-
-        <li class="step">
-          <div class="step__text">
+          </article><article data-step-page="4" hidden>
             <h3>Turn off desktop sorting</h3>
             <p>Right-click the desktop, choose <strong>Sort By → None</strong>, and make sure <strong>Use Stacks</strong> is off. If sorting is on, Finder snaps your icons straight back into a grid.</p>
-          </div>
-          <div class="mock mock--menu" aria-hidden="true">
-            <ul class="mock__menu">
-              <li><span class="mock__check"></span>New Folder</li>
-              <li><span class="mock__check"></span>Get Info</li>
-              <li class="mock__sep"></li>
-              <li><span class="mock__check"></span>Use Stacks</li>
-              <li class="is-open"><span class="mock__check"></span>Sort By<span class="mock__chev">›</span></li>
-              <li><span class="mock__check"></span>Clean Up</li>
-            </ul>
-            <ul class="mock__menu mock__menu--sub">
-              <li class="is-picked"><span class="mock__check">✓</span>None</li>
-              <li><span class="mock__check"></span>Snap to Grid</li>
-              <li class="mock__sep"></li>
-              <li><span class="mock__check"></span>Name</li>
-              <li><span class="mock__check"></span>Kind</li>
-              <li><span class="mock__check"></span>Date Added</li>
-            </ul>
-          </div>
-        </li>
-      </ol>
-
-      <div class="extras">
-        <details class="extra">
-          <summary>Prefer Terminal?</summary>
-          <p>Run this instead of steps 2 and 3. It clears the download flag, so macOS opens ShapeDesk without asking. Only do this for apps you trust.</p>
-          <div class="command">
-            <code>xattr -dr com.apple.quarantine /Applications/ShapeDesk.app</code>
-            <button class="command__copy" type="button" data-copy="xattr -dr com.apple.quarantine /Applications/ShapeDesk.app">Copy</button>
-          </div>
-        </details>
-        <details class="extra">
-          <summary>Build it from source</summary>
-          <p>You need Xcode or the Swift command line tools. Without Xcode 26 or later, the app builds without its icon.</p>
-          <div class="command">
-            <code>git clone https://github.com/addressanup/shapedesk.git &amp;&amp; cd shapedesk &amp;&amp; ./bundle.sh &amp;&amp; open build/ShapeDesk.app</code>
-            <button class="command__copy" type="button" data-copy="git clone https://github.com/addressanup/shapedesk.git &amp;&amp; cd shapedesk &amp;&amp; ./bundle.sh &amp;&amp; open build/ShapeDesk.app">Copy</button>
-          </div>
-        </details>
-        <details class="extra">
-          <summary>“Sort with ShapeDesk” missing in Finder?</summary>
-          <p>Install ShapeDesk in Applications and open it once, then enable the service in System Settings → Keyboard → Keyboard Shortcuts → Services → Files and Folders, and relaunch ShapeDesk.</p>
-        </details>
-      </div>
-    </section>
-
-    <section class="section faq" id="faq" aria-labelledby="faq-title">
-      <div class="section__head">
-        <h2 id="faq-title">Questions</h2>
-      </div>
-      <div class="faq__list">
-        <details id="privacy">
-          <summary>What can ShapeDesk see on my Mac?</summary>
-          <p>Shapes use the names and positions of your desktop items through Finder; that information stays on your Mac. AI Sort handles obvious files locally by default. For files that need AI, it sends only the name, type, size and dates to ShapeDesk's service and TypeSafe's Jev model, never file contents or full paths. Storage reads sizes and dates and compares contents locally. Update checks contact GitHub for the latest release. Your Pro recovery key stays in your Mac's Keychain.</p>
-        </details>
-        <details>
-          <summary>Is ShapeDesk still free?</summary>
-          <p>Yes. Shapes, words, Reset to grid and Settings are free. AI Sort and Storage need active Pro access: $5 a month for 1,000 AI checks, shared across up to 3 Macs, or a valid Pro coupon. Storage and files sorted locally don't use checks. Undo for sorts and duplicate moves remains available without Pro.</p>
-        </details>
-        <details>
-          <summary>Does Storage remove files automatically?</summary>
-          <p>No. You choose which duplicate copies to move into the Duplicates folder, and Undo last move restores them, with or without Pro. Not Opened lists files and apps for you to review. Move to Trash asks you to confirm and goes through Finder, so Put Back works until you empty the Trash. Nothing is offloaded automatically.</p>
-        </details>
-        <details>
-          <summary>Can AI Sort lose or overwrite my files?</summary>
-          <p>It moves files into eight category folders beside them and never deletes or overwrites a file. Obvious files use local rules; AI decisions require more than 80% confidence. Undo last sort restores the latest sort, even offline. A confidence score isn't a guarantee of the right category.</p>
-        </details>
-        <details>
-          <summary>What counts as an AI check?</summary>
-          <p>One completed classification of one file, whether it moves or stays. Failed checks are free, and obvious files that ShapeDesk sorts on your Mac, like default-named screenshots, don't use one. Your checks reset on the 1st of each month (UTC).</p>
-        </details>
-        <details>
-          <summary>How do I redeem a Pro coupon?</summary>
-          <p>In the app, open AI Sort → Account → Have a coupon?, enter the code and choose Redeem for Pro. No payment card is needed. Each code can be used once per account, and another valid coupon adds days to existing coupon access. Coupons aren't available on an active paid subscription.</p>
-        </details>
-        <details>
-          <summary>How do I use Pro on another Mac?</summary>
-          <p>On the Mac where you subscribed, open AI Sort → Account → Copy recovery key. On the other Mac, open AI Sort → Account → Already subscribed? Restore access and paste the key. One subscription covers up to 3 Macs.</p>
-        </details>
-        <details>
-          <summary>I replaced a Mac and hit the 3-Mac limit</summary>
-          <p>Sign in at <a href="/account">shapedesk.space/account</a> with your recovery key and deactivate the Mac you no longer use. Your subscription isn't affected.</p>
-        </details>
-        <details>
-          <summary>How do I cancel Pro?</summary>
-          <p>Open Manage billing in the app's Account screen, or sign in at <a href="/account">/account</a> and choose Manage billing. Either opens the Stripe portal; canceling takes effect at the end of the period you've paid for.</p>
-        </details>
-        <details>
-          <summary>Will I get my old layout back?</summary>
-          <p>Reset to grid lines every icon up in a tidy grid, sorted by name, the way Finder arranges a fresh desktop. ShapeDesk doesn't save the exact spots your icons were in before, so take a screenshot first if your layout matters to you. AI Sort's Undo last sort is different: it restores the latest sort exactly, even offline.</p>
-        </details>
-        <details>
-          <summary>Can I open ShapeDesk from the keyboard?</summary>
-          <p>Yes. Press ⌃⌥⌘D in any app, or record your own shortcut in the panel's Settings (the gear). Settings is also where you turn on Open ShapeDesk at login.</p>
-        </details>
-        <details>
-          <summary>Does it work with multiple displays?</summary>
-          <p>Yes. Click ShapeDesk in the menu bar on the display you want to use. Your desktop icons arrange on that screen, with room for its menu bar and Dock.</p>
-        </details>
-        <details>
-          <summary>How do I update ShapeDesk?</summary>
-          <p>Open Settings with the gear, then choose Check now. Automatic checks can show an update link when a newer release is available; they don't download or install anything. You can also <a href="https://github.com/addressanup/shapedesk/releases/latest/download/ShapeDesk.zip">download the latest version</a>, quit ShapeDesk and replace the app in Applications.</p>
-        </details>
-        <details>
-          <summary>Why do my icons jump back right away?</summary>
-          <p>Finder's desktop sorting is on. Right-click the desktop, choose Sort By → None, and turn off Use Stacks.</p>
-        </details>
-        <details>
-          <summary>How many icons do I need?</summary>
-          <p>Shapes work with any number. Words read best with about 7 icons per letter, so 40 icons spell a five-letter word well. If icons crowd each other, raise the Size slider.</p>
-        </details>
-        <details>
-          <summary>Does it work with iCloud Desktop &amp; Documents?</summary>
-          <p>Yes. Items that are still syncing may land outside the shape. Pick the shape again once they've finished.</p>
-        </details>
-        <details>
-          <summary>Which Macs does it run on?</summary>
-          <p>Any Mac with macOS 13 Ventura or later, on Apple Silicon or Intel.</p>
-        </details>
-        <details>
-          <summary>Why isn't it notarized?</summary>
-          <p>Notarization needs a paid Apple developer account. Until then, the full source is <a href="https://github.com/addressanup/shapedesk">on GitHub</a>, so you can read it or build it yourself.</p>
-        </details>
-        <details>
-          <summary>How do I quit or uninstall it?</summary>
-          <p>If you subscribe to Pro, cancel it first in Manage billing (the app's Account screen, or the account page). Then click the grid icon in the menu bar and choose Quit. To uninstall, drag ShapeDesk from Applications to the Trash.</p>
-        </details>
-      </div>
-    </section>
-
-    <section class="section closing" aria-labelledby="closing-title">
-      <img class="closing__icon" src="/img/app-icon.webp" width="112" height="112" alt="" loading="lazy">
-      <h2 id="closing-title">Give your desktop a shape.</h2>
-      <a class="button-download" href="https://github.com/addressanup/shapedesk/releases/latest/download/ShapeDesk.zip">
-        <svg viewBox="0 0 20 20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M10 3v10m-4-4 4 4 4-4M4 16.5h12"/></svg>
-        Download for Mac
-      </a>
-      <p class="meta">Shapes free · AI Sort and Storage with Pro · Version 1.4 · macOS 13 or later · Apple Silicon and Intel</p>
-      <div class="closing__support">
-        <p>Shapes are free. If ShapeDesk makes you smile, a coffee keeps it going.</p>
-        <a class="button-coffee" href="https://buymeacoffee.com/anup.tbc">
-          <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#cup"/></svg>
-          Buy me a coffee
-        </a>
-      </div>
-    </section>
-  </main>
-
-  <footer class="footer">
-    <nav class="footer__links" aria-label="Project">
-      <a href="https://github.com/addressanup/shapedesk">Source code</a>
-      <a href="https://github.com/addressanup/shapedesk/releases">All releases</a>
-      <a href="#whats-new">What's new in 1.4</a>
-      <a href="#settings">Settings</a>
-      <a href="https://github.com/addressanup/shapedesk/issues/new">Report a problem</a>
-      <a href="/account">Account</a>
-      <a href="https://buymeacoffee.com/anup.tbc">Buy me a coffee</a>
-    </nav>
-    <p>ShapeDesk is not affiliated with Apple. macOS and Finder are trademarks of Apple Inc.</p>
-  </footer>
-</body>
-</html>
+          </article></div><div class="step-actions"><button id="step-prev" disabled>← Previous</button><span id="step-counter">1 of 5</span><button id="step-next">Next step →</button></div><p class="help-note">ShapeDesk isn’t notarized by Apple yet. First launch needs your confirmation. <a href="https://github.com/addressanup/shapedesk">Review the source</a>.</p></div>
+ <div class="help-body" id="question-guide" role="tabpanel" aria-labelledby="questions-tab" hidden><label class="eyebrow" for="question-select">CHOOSE A QUESTION</label><select id="question-select"><option value="0">What can ShapeDesk see on my Mac?</option><option value="1">Is ShapeDesk still free?</option><option value="2">Does Storage remove files automatically?</option><option value="3">Can AI Sort lose or overwrite my files?</option><option value="4">What counts as an AI check?</option><option value="5">How do I redeem a Pro coupon?</option><option value="6">How do I use Pro on another Mac?</option><option value="7">I replaced a Mac and hit the 3-Mac limit</option><option value="8">How do I cancel Pro?</option><option value="9">Will I get my old layout back?</option><option value="10">Can I open ShapeDesk from the keyboard?</option><option value="11">Does it work with multiple displays?</option><option value="12">How do I update ShapeDesk?</option><option value="13">Why do my icons jump back right away?</option><option value="14">How many icons do I need?</option><option value="15">Does it work with iCloud Desktop &amp; Documents?</option><option value="16">Which Macs does it run on?</option><option value="17">Why isn't it notarized?</option><option value="18">How do I quit or uninstall it?</option><option value="19">Build it from source</option><option value="20">“Sort with ShapeDesk” missing in Finder?</option></select><div class="answer" aria-live="polite"><article data-answer="0"><h3>What can ShapeDesk see on my Mac?</h3><p>Shapes use the names and positions of your desktop items through Finder; that information stays on your Mac. AI Sort handles obvious files locally by default. For files that need AI, it sends only the name, type, size and dates to ShapeDesk's service and TypeSafe's Jev model, never file contents or full paths. Storage reads sizes and dates and compares contents locally. Update checks contact GitHub for the latest release. Your Pro recovery key stays in your Mac's Keychain.</p></article><article data-answer="1" hidden><h3>Is ShapeDesk still free?</h3><p>Yes. Shapes, words, Reset to grid and Settings are free. AI Sort and Storage need active Pro access: $5 a month for 1,000 AI checks, shared across up to 3 Macs, or a valid Pro coupon. Storage and files sorted locally don't use checks. Undo for sorts and duplicate moves remains available without Pro.</p></article><article data-answer="2" hidden><h3>Does Storage remove files automatically?</h3><p>No. You choose which duplicate copies to move into the Duplicates folder, and Undo last move restores them, with or without Pro. Not Opened lists files and apps for you to review. Move to Trash asks you to confirm and goes through Finder, so Put Back works until you empty the Trash. Nothing is offloaded automatically.</p></article><article data-answer="3" hidden><h3>Can AI Sort lose or overwrite my files?</h3><p>It moves files into eight category folders beside them and never deletes or overwrites a file. Obvious files use local rules; AI decisions require more than 80% confidence. Undo last sort restores the latest sort, even offline. A confidence score isn't a guarantee of the right category.</p></article><article data-answer="4" hidden><h3>What counts as an AI check?</h3><p>One completed classification of one file, whether it moves or stays. Failed checks are free, and obvious files that ShapeDesk sorts on your Mac, like default-named screenshots, don't use one. Your checks reset on the 1st of each month (UTC).</p></article><article data-answer="5" hidden><h3>How do I redeem a Pro coupon?</h3><p>In the app, open AI Sort → Account → Have a coupon?, enter the code and choose Redeem for Pro. No payment card is needed. Each code can be used once per account, and another valid coupon adds days to existing coupon access. Coupons aren't available on an active paid subscription.</p></article><article data-answer="6" hidden><h3>How do I use Pro on another Mac?</h3><p>On the Mac where you subscribed, open AI Sort → Account → Copy recovery key. On the other Mac, open AI Sort → Account → Already subscribed? Restore access and paste the key. One subscription covers up to 3 Macs.</p></article><article data-answer="7" hidden><h3>I replaced a Mac and hit the 3-Mac limit</h3><p>Sign in at <a href="/account">shapedesk.space/account</a> with your recovery key and deactivate the Mac you no longer use. Your subscription isn't affected.</p></article><article data-answer="8" hidden><h3>How do I cancel Pro?</h3><p>Open Manage billing in the app's Account screen, or sign in at <a href="/account">/account</a> and choose Manage billing. Either opens the Stripe portal; canceling takes effect at the end of the period you've paid for.</p></article><article data-answer="9" hidden><h3>Will I get my old layout back?</h3><p>Reset to grid lines every icon up in a tidy grid, sorted by name, the way Finder arranges a fresh desktop. ShapeDesk doesn't save the exact spots your icons were in before, so take a screenshot first if your layout matters to you. AI Sort's Undo last sort is different: it restores the latest sort exactly, even offline.</p></article><article data-answer="10" hidden><h3>Can I open ShapeDesk from the keyboard?</h3><p>Yes. Press ⌃⌥⌘D in any app, or record your own shortcut in the panel's Settings (the gear). Settings is also where you turn on Open ShapeDesk at login.</p></article><article data-answer="11" hidden><h3>Does it work with multiple displays?</h3><p>Yes. Click ShapeDesk in the menu bar on the display you want to use. Your desktop icons arrange on that screen, with room for its menu bar and Dock.</p></article><article data-answer="12" hidden><h3>How do I update ShapeDesk?</h3><p>Open Settings with the gear, then choose Check now. Automatic checks can show an update link when a newer release is available; they don't download or install anything. You can also <a href="https://github.com/addressanup/shapedesk/releases/latest/download/ShapeDesk.zip">download the latest version</a>, quit ShapeDesk and replace the app in Applications.</p></article><article data-answer="13" hidden><h3>Why do my icons jump back right away?</h3><p>Finder's desktop sorting is on. Right-click the desktop, choose Sort By → None, and turn off Use Stacks.</p></article><article data-answer="14" hidden><h3>How many icons do I need?</h3><p>Shapes work with any number. Words read best with about 7 icons per letter, so 40 icons spell a five-letter word well. If icons crowd each other, raise the Size slider.</p></article><article data-answer="15" hidden><h3>Does it work with iCloud Desktop &amp; Documents?</h3><p>Yes. Items that are still syncing may land outside the shape. Pick the shape again once they've finished.</p></article><article data-answer="16" hidden><h3>Which Macs does it run on?</h3><p>Any Mac with macOS 13 Ventura or later, on Apple Silicon or Intel.</p></article><article data-answer="17" hidden><h3>Why isn't it notarized?</h3><p>Notarization needs a paid Apple developer account. Until then, the full source is <a href="https://github.com/addressanup/shapedesk">on GitHub</a>, so you can read it or build it yourself.</p></article><article data-answer="18" hidden><h3>How do I quit or uninstall it?</h3><p>If you subscribe to Pro, cancel it first in Manage billing (the app's Account screen, or the account page). Then click the grid icon in the menu bar and choose Quit. To uninstall, drag ShapeDesk from Applications to the Trash.</p></article><article data-answer="19" hidden><h3>Build it from source</h3><p>You need Xcode or the Swift command line tools. Follow the <a href="https://github.com/addressanup/shapedesk#build--run">build instructions on GitHub</a>. Without Xcode 26 or later, the app builds without its icon.</p></article><article data-answer="20" hidden><h3>“Sort with ShapeDesk” missing in Finder?</h3><p>Install ShapeDesk in Applications and open it once, then enable the service in System Settings → Keyboard → Keyboard Shortcuts → Services → Files and Folders, and relaunch ShapeDesk.</p></article></div></div>
+ </section>
+ </main>
+</div>
+<footer class="workspace-footer"><p><span class="status-dot"></span>Made for macOS 13+</p><p>Version 1.4 <span>·</span> Apple Silicon &amp; Intel</p><a href="#privacy">Privacy</a></footer>
+<noscript><style>.workspace-page{height:auto;overflow:auto}.shell{display:block}.view[hidden]{display:block!important}.view{min-height:700px}.rail,.mobile-nav{display:none}</style><p>Enable JavaScript for the interactive previews and navigation.</p></noscript>
+</body></html>

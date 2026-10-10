@@ -150,8 +150,8 @@ export function initSortDesk() {
   // Layout -------------------------------------------------------------------
 
   function layout() {
-    // Wide = the dropdown overlays the field; below 1240px it stacks underneath.
-    const wide = !matchMedia('(max-width: 1240px)').matches;
+    // The workspace keeps the dropdown beside the files above its phone breakpoint.
+    const wide = !matchMedia('(max-width: 760px)').matches;
     const fieldW = field.clientWidth;
     const fieldH = field.clientHeight;
     const labelsHidden = matchMedia('(max-width: 860px)').matches;

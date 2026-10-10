@@ -22,7 +22,6 @@ export function initDesktop() {
   const stage = document.getElementById('stage');
   const layer = document.getElementById('icons');
   const panel = document.getElementById('panel');
-  const toggle = document.getElementById('panel-toggle');
   const status = document.getElementById('status');
   const countLabel = document.getElementById('icon-count');
   const noteCount = document.getElementById('note-count');
@@ -33,8 +32,6 @@ export function initDesktop() {
   const actions = panel.querySelectorAll('[data-shape], #spell-form button, #reset');
 
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
-  // Must match the site.css breakpoint that moves the panel below the shapes.
-  const stacked = matchMedia('(max-width: 1240px)');
   if (reduceMotion.matches) animateInput.checked = false;
 
   let icons = [];
@@ -195,39 +192,6 @@ export function initDesktop() {
   }
 
   // Panel ------------------------------------------------------------------
-
-  const isOpen = () => panel.dataset.open === 'true';
-
-  function setOpen(open) {
-    panel.dataset.open = String(open);
-    toggle.setAttribute('aria-expanded', String(open));
-  }
-
-  toggle.addEventListener('click', () => {
-    if (stacked.matches) {
-      panel.scrollIntoView({ behavior: reduceMotion.matches ? 'auto' : 'smooth', block: 'center' });
-      return;
-    }
-    const scrolledAway = window.scrollY > desktop.offsetHeight / 2;
-    if (scrolledAway) {
-      window.scrollTo({ top: 0, behavior: reduceMotion.matches ? 'auto' : 'smooth' });
-      setOpen(true);
-    } else {
-      setOpen(!isOpen());
-    }
-  });
-
-  document.getElementById('close').addEventListener('click', () => {
-    setOpen(false);
-    if (!stacked.matches) toggle.focus();
-  });
-
-  panel.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !stacked.matches) {
-      setOpen(false);
-      toggle.focus();
-    }
-  });
 
   // Anything the visitor does takes over from the intro.
   panel.addEventListener('pointerdown', () => clearTimeout(introTimer));
