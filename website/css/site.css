@@ -716,6 +716,89 @@ input {
   color: var(--mute);
 }
 
+/* Release overview and Settings keep the same desktop palette and type. */
+
+.release__grid .how__item {
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+
+.release__grid .meta {
+  color: var(--folder);
+  font-size: 11.5px;
+}
+
+.release__grid h3 {
+  margin-top: 0;
+}
+
+.release__grid a {
+  text-decoration-thickness: 1px;
+  text-underline-offset: 6px;
+  text-decoration-color: var(--line);
+}
+
+.release__grid a:hover {
+  text-decoration-color: var(--folder);
+}
+
+.release__foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+  margin-top: 32px;
+  color: var(--mute);
+  font-size: 14px;
+}
+
+.release__foot a {
+  color: var(--chalk);
+  text-underline-offset: 4px;
+}
+
+.settings__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 400px) minmax(0, 1fr);
+  gap: clamp(32px, 4.5vw, 64px);
+  align-items: start;
+}
+
+.settings__shortcut {
+  padding: clamp(24px, 3vw, 40px);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--night);
+}
+
+.settings__keys {
+  display: flex;
+  gap: 8px;
+  margin: 36px 0;
+}
+
+.settings__keys kbd {
+  display: grid;
+  place-items: center;
+  flex: 1;
+  aspect-ratio: 1;
+  max-width: 68px;
+  border: 1px solid rgba(244, 238, 248, 0.22);
+  border-radius: 10px;
+  background: var(--dusk);
+  box-shadow: 0 4px 0 var(--ink);
+  font: 28px/1 var(--font-ui);
+}
+
+.settings__shortcut h3 {
+  margin-bottom: 12px;
+  font-size: 24px;
+}
+
+.settings__shortcut > p:last-child {
+  color: var(--mute);
+  font-size: 16px;
+}
+
 /* Video */
 
 .video__frame {
@@ -743,6 +826,8 @@ input {
 
 .how__item {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
   align-content: start;
   gap: 12px;
 }
@@ -761,6 +846,8 @@ input {
 .figure {
   margin: 0;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
   gap: 10px;
 }
 
@@ -1324,7 +1411,7 @@ input {
   text-underline-offset: 4px;
 }
 
-/* Hero "New in 1.1" pill -------------------------------------------------- */
+/* Hero release link ------------------------------------------------------ */
 
 .hero-pill {
   justify-self: start;
@@ -1547,6 +1634,7 @@ input {
 
 .aiwin__toolbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   flex: none;
@@ -1666,24 +1754,6 @@ input {
   margin-top: 1px;
   font-size: 10px;
   color: var(--mute);
-}
-
-.aiwin__change {
-  margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  flex: none;
-  padding: 3.5px 8px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.1);
-  font-size: 10.5px;
-  color: rgba(255, 255, 255, 0.85);
-}
-
-.aiwin__change svg {
-  width: 6px;
-  height: 8px;
 }
 
 .aiwin__counts {
@@ -1868,6 +1938,30 @@ input {
 .aiwin__checks b {
   font-weight: 650;
   color: #fff;
+}
+
+.aiwin__local {
+  font-size: 11px;
+  color: #7fd6b2;
+}
+
+.local-sorting {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: 16px 32px;
+  margin-top: 40px;
+  padding: 24px 0;
+  border-block: 1px solid var(--line);
+}
+
+.local-sorting h3 {
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.local-sorting p {
+  font-size: 16px;
+  color: var(--mute);
 }
 
 /* The four AI Sort fact items --------------------------------------------- */
@@ -2647,7 +2741,9 @@ input {
     width: 72px;
   }
 
-  .pro__grid {
+  .pro__grid,
+  .settings__grid,
+  .local-sorting {
     grid-template-columns: minmax(0, 1fr);
   }
 

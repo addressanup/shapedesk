@@ -89,21 +89,21 @@ function titleFor(s) {
   if (s.accessType === 'coupon') {
     return s.active
       ? ['Pro active', `Free access through ${localDate(s.renewsAt)}. Redeem more coupons in the app to add days.`]
-      : ['Coupon ended', 'Redeem another coupon or subscribe to turn AI Sort back on.'];
+      : ['Coupon ended', 'Redeem another coupon or subscribe to turn AI Sort and Storage back on. Undo remains available.'];
   }
   if (s.accessType === 'owner') {
     return s.active
-      ? ['Owner access', `Includes AI Sort until ${localDate(s.renewsAt)}.`]
-      : ['Owner access ended', 'AI Sort is off.'];
+      ? ['Owner access', `Includes AI Sort and Storage until ${localDate(s.renewsAt)}.`]
+      : ['Owner access ended', 'AI Sort and Storage are off. Undo remains available.'];
   }
   if (s.active) return ['Pro active', `Paid through ${localDate(s.renewsAt)}.`];
   switch (s.subscriptionStatus) {
     case 'past_due':
-    case 'unpaid': return ['Payment needed', 'Update your payment method in Manage billing to turn AI Sort back on.'];
+    case 'unpaid': return ['Payment needed', 'Update your payment method in Manage billing to turn AI Sort and Storage back on.'];
     case 'canceled':
-    case 'incomplete_expired': return ['Subscription ended', 'AI Sort is off. To subscribe again, start from AI Sort → Account in the app.'];
-    case 'paused': return ['Subscription paused', 'AI Sort is paused. Open Manage billing to review it.'];
-    default: return ['Pro inactive', 'AI Sort is off for this subscription right now. Open Manage billing, or refresh to check again.'];
+    case 'incomplete_expired': return ['Subscription ended', 'AI Sort and Storage are off; undo remains available. To subscribe again, start from AI Sort → Account in the app.'];
+    case 'paused': return ['Subscription paused', 'AI Sort and Storage are paused. Open Manage billing to review it.'];
+    default: return ['Pro inactive', 'AI Sort and Storage are off for this subscription right now. Open Manage billing, or refresh to check again.'];
   }
 }
 

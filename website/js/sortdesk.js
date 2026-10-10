@@ -8,24 +8,26 @@ const EMBLEM = {
   Images: 'em-images', Docs: 'em-docs', Code: 'em-code', Other: 'em-other',
 };
 
+// Local examples match the app's default LocalRules.swift behavior. The other
+// fixtures use illustrative AI scores, including two that stay below the cutoff.
 const FILES = [
-  { name: 'Screenshot 2026-10-06 at 09.41.12.png', kind: 'screenshot', cat: 'Screenshots', conf: 0.97, x: 0.00, y: 0.05 },
-  { name: 'Invoice-0423.pdf', kind: 'doc', badge: 'PDF', color: '#c94f43', cat: 'Docs', conf: 0.96, x: 0.24, y: 0.01 },
+  { name: 'Screenshot 2026-10-06 at 09.41.12.png', kind: 'screenshot', cat: 'Screenshots', local: true, x: 0.00, y: 0.05 },
+  { name: 'Invoice-0423.pdf', kind: 'doc', badge: 'PDF', color: '#c94f43', cat: 'Docs', local: true, x: 0.24, y: 0.01 },
   { name: 'moodboard-02.jpg', kind: 'image', cat: 'Images', conf: 0.93, x: 0.46, y: 0.08 },
-  { name: 'ContentView.swift', kind: 'doc', badge: 'SWIFT', color: '#d96a45', cat: 'Code', conf: 0.97, x: 0.68, y: 0.02 },
+  { name: 'ContentView.swift', kind: 'doc', badge: 'SWIFT', color: '#d96a45', cat: 'Code', local: true, x: 0.68, y: 0.02 },
   { name: 'drone-beach-4k.mp4', kind: 'video', cat: 'Videos', conf: 0.96, x: 0.90, y: 0.10 },
   { name: 'untitled', kind: 'blank', cat: 'Other', conf: 0.41, x: 0.09, y: 0.30 },
-  { name: 'budget-2026.xlsx', kind: 'doc', badge: 'XLSX', color: '#3f8f57', cat: 'Docs', conf: 0.92, x: 0.32, y: 0.25 },
-  { name: 'IMG_2041.HEIC', kind: 'image', cat: 'Images', conf: 0.95, x: 0.56, y: 0.31 },
-  { name: 'deploy.sh', kind: 'doc', badge: 'SH', color: '#5f6b7d', cat: 'Code', conf: 0.91, x: 0.78, y: 0.27 },
-  { name: 'Screen Recording 2026-10-05 at 14.02.11.mov', kind: 'screenrec', cat: 'Recordings', conf: 0.93, x: 0.97, y: 0.34 },
+  { name: 'budget-2026.xlsx', kind: 'doc', badge: 'XLSX', color: '#3f8f57', cat: 'Docs', local: true, x: 0.32, y: 0.25 },
+  { name: 'IMG_2041.HEIC', kind: 'image', cat: 'Images', local: true, x: 0.56, y: 0.31 },
+  { name: 'deploy.sh', kind: 'doc', badge: 'SH', color: '#5f6b7d', cat: 'Code', local: true, x: 0.78, y: 0.27 },
+  { name: 'Screen Recording 2026-10-05 at 14.02.11.mov', kind: 'screenrec', cat: 'Recordings', local: true, x: 0.97, y: 0.34 },
   { name: 'meeting notes.txt', kind: 'doc', badge: 'TXT', color: '#7d8590', cat: 'Docs', conf: 0.88, x: 0.03, y: 0.55 },
-  { name: 'fetch_weather.py', kind: 'doc', badge: 'PY', color: '#4f7fa8', cat: 'Code', conf: 0.94, x: 0.27, y: 0.50 },
-  { name: 'Screenshot 2026-10-03 at 11.27.40.png', kind: 'screenshot', cat: 'Screenshots', conf: 0.95, x: 0.49, y: 0.56 },
+  { name: 'fetch_weather.py', kind: 'doc', badge: 'PY', color: '#4f7fa8', cat: 'Code', local: true, x: 0.27, y: 0.50 },
+  { name: 'Screenshot 2026-10-03 at 11.27.40.png', kind: 'screenshot', cat: 'Screenshots', local: true, x: 0.49, y: 0.56 },
   { name: 'podcast-intro.mp3', kind: 'audio', cat: 'Audio', conf: 0.92, x: 0.71, y: 0.50 },
-  { name: 'lease agreement (signed).pdf', kind: 'doc', badge: 'PDF', color: '#c94f43', cat: 'Docs', conf: 0.94, x: 0.91, y: 0.59 },
+  { name: 'lease agreement (signed).pdf', kind: 'doc', badge: 'PDF', color: '#c94f43', cat: 'Docs', local: true, x: 0.91, y: 0.59 },
   { name: 'lofi-loop-90bpm.wav', kind: 'audio', cat: 'Audio', conf: 0.9, x: 0.16, y: 0.77 },
-  { name: 'fonts-backup.zip', kind: 'zip', cat: 'Other', conf: 0.89, x: 0.42, y: 0.79 },
+  { name: 'fonts-backup.zip', kind: 'zip', cat: 'Other', local: true, x: 0.42, y: 0.79 },
   { name: 'export (3)', kind: 'blank', cat: 'Docs', conf: 0.57, x: 0.68, y: 0.74 },
 ];
 
@@ -105,6 +107,7 @@ export function initSortDesk() {
   const catsEl = document.getElementById('aiwin-cats');
   const tableEl = document.getElementById('aiwin-table');
   const checksEl = document.getElementById('checks-left');
+  const localEl = document.getElementById('aiwin-local');
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
 
   const setStatus = (text) => { statusEl.textContent = text; };
@@ -227,7 +230,7 @@ export function initSortDesk() {
 
   // Sorting -------------------------------------------------------------------
 
-  const counters = { scanned: 0, moved: 0, kept: 0 };
+  const counters = { scanned: 0, moved: 0, kept: 0, local: 0 };
   let checks = Number(checksEl.textContent) || 863;
   let running = false;
   let undoing = false;
@@ -239,6 +242,8 @@ export function initSortDesk() {
     el('count-scanned').textContent = String(counters.scanned);
     el('count-moved').textContent = String(counters.moved);
     el('count-kept').textContent = String(counters.kept);
+    el('count-local').textContent = String(counters.local);
+    localEl.hidden = counters.local === 0;
   }
   function spendCheck() {
     checks -= 1;
@@ -285,6 +290,9 @@ export function initSortDesk() {
     counters.scanned = 0;
     counters.moved = 0;
     counters.kept = 0;
+    counters.local = 0;
+    for (const count of Object.values(counts)) { count.moved = 0; count.kept = 0; }
+    buildTable();
     movedOrder = [];
     updateCounters();
     countsEl.hidden = false;
@@ -299,16 +307,17 @@ export function initSortDesk() {
 
     for (const file of loose) {
       if (stopRequested) break;
-      setStatus(`Classifying ${file.name}…`);
+      setStatus(file.local ? `Sorting ${file.name} on this Mac…` : `Checking ${file.name} with AI…`);
       await wait(200);
       counters.scanned += 1;
-      spendCheck();
-      if (file.conf > 0.8) {
+      if (!file.local) spendCheck();
+      if (file.local || file.conf > 0.8) {
         const folder = folders.get(file.cat) ?? makeFolder(file.cat);
         bumpTable(file.cat, 'moved');
         const from = centerOf(file.el.querySelector('.ficon__art'), field);
         const to = centerOf(folder.el.querySelector('.ficon__art'), field);
         counters.moved += 1;
+        if (file.local) counters.local += 1;
         movedOrder.push(file);
         setStatus(`Moved ${file.name} to ${file.cat}.`);
         await fly(file.el, from, to, { shrink: true });
@@ -381,6 +390,7 @@ export function initSortDesk() {
     }
     movedOrder = [];
     counters.moved = 0;
+    counters.local = 0;
     updateCounters();
     setStatus(`Restored ${restored} files; 0 could not be restored.`);
     canUndo = false;
