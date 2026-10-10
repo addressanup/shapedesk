@@ -1,0 +1,139 @@
+/* Account uses the same chrome and theme as the public workspace. */
+.account-page {
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: 68px minmax(0, 1fr) 38px;
+  font-size: 15px;
+}
+.accountdesk {
+  grid-row: 2;
+  min-height: 0;
+  min-width: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 28px;
+  background: var(--ink);
+  align-items: safe center;
+  outline: none;
+}
+.accountwin {
+  width: min(580px, 100%);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: none;
+  overflow: visible;
+}
+.accountwin__body { padding: 30px; gap: 18px; }
+.accountwin__body h1 { font-size: 36px; font-weight: 500; letter-spacing: -.035em; line-height: 1.1; }
+.accountwin__body h2 { font-size: 13px; font-weight: 600; }
+.acct-block { gap: 16px; }
+.acct-sub { margin-top: 0; line-height: 1.65; }
+.acct-note { line-height: 1.6; }
+.acct-note b { font-weight: 500; overflow-wrap: anywhere; }
+#signin-form { margin: 5px 0; }
+.acct-field label { color: var(--chalk); font-size: 12px; font-weight: 500; }
+.acct-keyrow input {
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--ink);
+  color: var(--chalk);
+  box-shadow: none;
+  font: 13px var(--font-ui);
+}
+.acct-keyrow input::placeholder { color: var(--mute); opacity: 1; }
+.acct-keyrow input:focus {
+  box-shadow: 0 0 0 2px var(--surface-pressed);
+  border-color: var(--focus-border);
+}
+.account-page .btn {
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface-soft);
+  color: var(--chalk);
+  box-shadow: none;
+  font-size: 12px;
+  font-weight: 500;
+}
+.account-page .btn:hover:enabled { background: var(--surface-hover); }
+.account-page .btn--primary {
+  min-height: 40px;
+  padding: 0 24px;
+  background: var(--chalk);
+  color: var(--ink);
+  border-color: var(--chalk);
+  font-size: 13px;
+}
+.account-page .btn--primary:hover:enabled { background: var(--strong-hover); }
+.account-page .btn--danger { color: var(--danger); }
+.acct-help summary { text-decoration-color: var(--line); text-underline-offset: 4px; }
+.acct-help summary:hover { text-decoration-color: currentColor; }
+.acct-help__mock { border-radius: 4px; background: var(--surface-soft); }
+.acct-help__mock .mock__btn { background: var(--surface); color: var(--mute); box-shadow: none; border-radius: 3px; }
+.acct-help__mock .mock__btn--focus { color: var(--chalk); box-shadow: 0 0 0 1px var(--line); }
+
+/* Usage and billing sit beside Macs when there is room. */
+.accountwin:has(#view-account:not([hidden])) { width: min(980px, 100%); }
+#view-account { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 26px 36px; }
+.acct-heading { grid-column: 1 / -1; display: grid; gap: 10px; }
+.acct-tabs { display: none; }
+.acct-heading h1:focus { outline: none; }
+.acct-overview { display: grid; gap: 24px; align-content: start; }
+.acct-card { padding: 18px; background: var(--surface-soft); border-radius: 5px; gap: 12px; }
+.acct-usage { flex-wrap: wrap; gap: 6px; }
+.acct-usage b { font: 500 42px/1.1 var(--font-display); letter-spacing: -.04em; }
+.acct-usage .acct-used { flex-basis: 100%; margin-left: 0; }
+.acct-meter { background: var(--track); }
+.acct-macs { align-content: start; gap: 12px; }
+.acct-maclist { gap: 0; border-top: 1px solid var(--line); }
+.acct-mac { padding: 14px 0; border-bottom: 1px solid var(--line); border-radius: 0; background: none; }
+.acct-mac__name { font-weight: 500; font-size: 12px; }
+.acct-mac__dates { margin-top: 4px; }
+.acct-confirm { padding: 12px; background: var(--danger-surface); border: 1px solid var(--danger-line); border-radius: 4px; box-shadow: none; }
+.acct-confirm p { color: var(--chalk); }
+.acct-actions { grid-column: 1 / -1; border-color: var(--line); padding-top: 18px; }
+.acct-actions #signout { margin-left: auto; }
+.acct-actions .acct-note-line { flex: 1; align-self: center; text-align: center; line-height: 1.35; }
+.acct-alert { background: var(--danger-surface); color: var(--danger); border: 1px solid var(--danger-line); border-radius: 4px; box-shadow: none; }
+.acct-note-line { color: var(--accent-text); }
+
+@media (max-width: 760px) {
+  .account-page { grid-template-rows: 60px minmax(0, 1fr) 30px; }
+  .accountdesk { padding: 18px; }
+  .accountwin__body { padding: 22px; }
+  .accountwin__body h1 { font-size: 30px; }
+  .acct-block { gap: 14px; }
+  .accountdesk:has(#view-account:not([hidden])) { align-items: stretch; }
+  .accountwin:has(#view-account:not([hidden])) { height: 100%; min-height: 0; }
+  .accountwin:has(#view-account:not([hidden])) .accountwin__body { height: 100%; min-height: 0; display: flex; flex-direction: column; }
+  #view-account { flex: 1; min-height: 0; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr) auto; gap: 14px; }
+  .acct-heading, .acct-actions { grid-column: 1; }
+  .acct-heading { gap: 6px; }
+  .acct-heading .eyebrow { display: none; }
+  .acct-tabs { display: flex; grid-row: 2; }
+  .acct-overview, .acct-macs { grid-row: 3; min-height: 0; overflow: auto; overscroll-behavior: contain; scrollbar-width: thin; padding-right: 3px; }
+  #view-account[data-section="overview"] .acct-macs,
+  #view-account[data-section="macs"] .acct-overview { display: none; }
+  .acct-overview { gap: 14px; }
+  .acct-card { padding: 13px; gap: 7px; }
+  .acct-usage b { font-size: 34px; }
+  .acct-usage .acct-used { flex-basis: auto; margin-left: auto; font-size: 10px; }
+  .acct-overview > .acct-block { gap: 9px; }
+  .acct-macs { gap: 9px; }
+  .acct-macs h2 { display: none; }
+  .acct-mac { padding: 10px 0; }
+  .acct-mac__name { font-size: 11px; }
+  .acct-actions { grid-row: 4; padding-top: 12px; }
+  .acct-sub { font-size: 13px; }
+  .acct-note { font-size: 11px; }
+  .acct-keyrow input { font-size: 16px; }
+}
+@media (max-width: 380px) {
+  .accountdesk { padding: 12px; }
+  .accountwin__body { padding: 18px; }
+  #view-signin { gap: 12px; }
+}

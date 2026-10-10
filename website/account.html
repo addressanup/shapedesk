@@ -2,19 +2,24 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Account · ShapeDesk Pro</title>
   <meta name="robots" content="noindex">
   <meta name="referrer" content="no-referrer">
-  <meta name="theme-color" content="#110d1e">
-  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#f5f5f3">
+  <meta name="color-scheme" content="light dark">
+  <script src="/js/theme.js"></script>
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
   <link rel="preload" href="/fonts/gabarito.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/fonts/martian-mono.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/css/site.css">
+  <link rel="stylesheet" href="/css/workspace.css">
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="/css/minimal.css">
+  <link rel="stylesheet" href="/css/account.css">
   <script type="module" src="/js/account.js"></script>
 </head>
-<body>
+<body class="account-page">
   <svg class="sprite" aria-hidden="true" focusable="false">
     <defs>
       <symbol id="em-grid" viewBox="0 0 16 16">
@@ -32,30 +37,23 @@
     </defs>
   </svg>
 
-  <header class="menubar">
-    <nav class="menubar__left" aria-label="Site">
-      <a class="menubar__app" href="/">ShapeDesk</a>
-      <a class="menubar__item" href="/#install">Install</a>
-    </nav>
-    <div class="menubar__right">
-      <a class="menubar__item" href="/account" aria-current="page">Account</a>
-      <a class="menubar__coffee" href="https://buymeacoffee.com/anup.tbc">
-        <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#cup"/></svg>
-        <span class="menubar__coffee-label">Buy me a coffee</span>
-      </a>
+  <a class="skip-link" href="#account-content">Skip to content</a>
+  <header class="appbar">
+    <a class="brand" href="/"><svg viewBox="0 0 16 16" aria-hidden="true"><use href="#em-grid"/></svg>ShapeDesk<span>1.4</span></a>
+    <p class="appbar-note">My account</p>
+    <div class="appbar-actions">
+      <a class="account-link" href="/">Back to ShapeDesk</a>
+      <label class="theme-control"><span class="visually-hidden">Color theme</span><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 2.5a7.5 7.5 0 0 1 0 15z" fill="currentColor"/></svg><select data-theme-select aria-label="Color theme" autocomplete="off"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+      <a class="download-link" href="/download">Download<span class="download-platform"> for Mac</span> <span aria-hidden="true">↗</span></a>
     </div>
   </header>
 
-  <main class="accountdesk">
+  <main class="accountdesk" id="account-content" tabindex="-1">
     <div class="accountwin">
-      <div class="aiwin__toolbar" aria-hidden="true">
-        <svg class="aiwin__glyph" viewBox="0 0 16 16"><use href="#em-grid"/></svg>
-        <span class="aiwin__app">ShapeDesk</span>
-        <span class="aiwin__seg"><span class="is-on">Account</span></span>
-      </div>
       <div class="accountwin__body">
 
         <section id="view-signin" class="acct-block">
+          <p class="eyebrow">MY ACCOUNT</p>
           <h1>Your Pro account</h1>
           <p class="acct-sub">Sign in with your recovery key to see this month's AI checks, manage your Macs and open billing.</p>
           <p class="acct-note">Pro includes AI Sort and Storage. Folder sizes, duplicate cleanup and files sorted on your Mac use no AI checks.</p>
@@ -86,11 +84,16 @@
           <p><a class="acct-link" href="/#pro">No Pro yet? It starts in the app</a></p>
         </section>
 
-        <section id="view-account" class="acct-block" hidden>
+        <section id="view-account" class="acct-block" data-section="overview" hidden>
+          <header class="acct-heading">
+          <p class="eyebrow">MY ACCOUNT</p>
           <h1 id="acct-title" tabindex="-1">Pro active</h1>
           <p class="acct-sub" id="acct-sub"></p>
           <p class="acct-note" id="acct-idnote" hidden>Account <b id="acct-id"></b> — quote this ID when contacting support.</p>
+          </header>
 
+          <div class="segmented acct-tabs" role="tablist" aria-label="Account sections"><button type="button" role="tab" aria-selected="true" aria-controls="account-overview" data-account-section="overview">Overview</button><button type="button" role="tab" aria-selected="false" aria-controls="account-macs" tabindex="-1" data-account-section="macs">Macs</button></div>
+          <div class="acct-overview" id="account-overview">
           <div class="acct-card">
             <h2>This month</h2>
             <p class="acct-usage"><b id="acct-remaining">0</b><span>checks left</span><span class="acct-used" id="acct-used"></span></p>
@@ -103,8 +106,9 @@
             <div><button class="btn" id="manage-billing" type="button" hidden>Manage billing</button></div>
             <p class="acct-note" id="billing-note"></p>
           </div>
+          </div>
 
-          <div class="acct-macs">
+          <div class="acct-macs" id="account-macs">
             <h2>Macs</h2>
             <p id="macs-count"></p>
             <ul class="acct-maclist" id="mac-list"></ul>
@@ -114,15 +118,15 @@
 
           <div class="acct-actions">
             <button class="btn" id="refresh" type="button">Refresh</button>
-            <span class="spacer"></span>
+            <p class="acct-note-line" id="acct-note-line" role="status" hidden></p>
             <button class="btn" id="signout" type="button">Sign out</button>
           </div>
         </section>
 
-        <p class="acct-note-line" id="acct-note-line" role="status" hidden></p>
         <p class="acct-alert" id="acct-alert" role="alert" hidden></p>
       </div>
     </div>
   </main>
+  <footer class="workspace-footer"><p><span class="status-dot" aria-hidden="true"></span>Your ShapeDesk account</p><p>AI Sort · Storage · Up to 3 Macs</p><a href="/#privacy">Privacy</a></footer>
 </body>
 </html>

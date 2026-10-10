@@ -282,4 +282,28 @@ els.signout.addEventListener('click', () => {
   els.keyInput.focus();
 });
 
+// Compact account navigation; desktop keeps both panels side by side.
+const sectionTabs = [...document.querySelectorAll('[data-account-section]')];
+function selectSection(tab) {
+  els.account.dataset.section = tab.dataset.accountSection;
+  sectionTabs.forEach(button => {
+    const selected = button === tab;
+    button.setAttribute('aria-selected', String(selected));
+    button.tabIndex = selected ? 0 : -1;
+  });
+}
+sectionTabs.forEach((tab, index) => {
+  tab.addEventListener('click', () => selectSection(tab));
+  tab.addEventListener('keydown', event => {
+    let next;
+    if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') next = sectionTabs[1 - index];
+    else if (event.key === 'Home') next = sectionTabs[0];
+    else if (event.key === 'End') next = sectionTabs[sectionTabs.length - 1];
+    else return;
+    event.preventDefault();
+    selectSection(next);
+    next.focus();
+  });
+});
+
 render();

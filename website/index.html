@@ -7,7 +7,8 @@
   <meta name="description" content="Arrange your Mac's desktop icons into shapes for free. ShapeDesk Pro adds AI file sorting, folder sizes, duplicate cleanup and unopened files. New in 1.4: Storage, Settings and fewer AI checks.">
   <link rel="canonical" href="https://shapedesk.space/">
   <meta name="theme-color" content="#f5f5f3">
-  <meta name="color-scheme" content="light">
+  <meta name="color-scheme" content="light dark">
+  <script src="/js/theme.js"></script>
 
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://shapedesk.space/">
@@ -25,6 +26,7 @@
   <link rel="preload" href="/fonts/gabarito.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/css/site.css">
   <link rel="stylesheet" href="/css/workspace.css">
+  <link rel="stylesheet" href="/css/theme.css">
   <link rel="stylesheet" href="/css/minimal.css">
   <script type="module" src="/js/workspace.js"></script>
 
@@ -146,7 +148,7 @@
 <header class="appbar">
  <a class="brand" href="#top"><svg viewBox="0 0 16 16" aria-hidden="true"><use href="#em-grid"/></svg>ShapeDesk<span>1.4</span></a>
  <p class="appbar-note">A little order. A little play.</p>
- <div class="appbar-actions"><a class="account-link" href="/account">My account</a><a class="download-link" href="/download">Download for Mac <span aria-hidden="true">↗</span></a></div>
+ <div class="appbar-actions"><a class="account-link" href="/account">My account</a><label class="theme-control"><span class="visually-hidden">Color theme</span><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 2.5a7.5 7.5 0 0 1 0 15z" fill="currentColor"/></svg><select data-theme-select aria-label="Color theme" autocomplete="off"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label><a class="download-link" href="/download">Download<span class="download-platform"> for Mac</span> <span aria-hidden="true">↗</span></a></div>
 </header>
 <div class="shell">
  <aside class="rail"><div class="rail-top"><p class="eyebrow">Make yourself at home</p><nav aria-label="Explore ShapeDesk"><a href="#top" data-route="top" aria-current="page"><span class="nav-number">01</span>Shapes</a><a href="#ai-sort" data-route="ai-sort"><span class="nav-number">02</span>AI Sort</a><a href="#storage" data-route="storage"><span class="nav-number">03</span>Storage<span class="nav-new">NEW</span></a><a href="#settings" data-route="settings"><span class="nav-number">04</span>Settings</a><a href="#watch" data-route="watch"><span class="nav-number">05</span>Watch demo</a><a href="#pro" data-route="pro"><span class="nav-number">06</span>Free & Pro</a><a href="#help" data-route="help"><span class="nav-number">07</span>Install & help</a></nav></div>

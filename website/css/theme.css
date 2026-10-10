@@ -1,0 +1,113 @@
+/* Shared color tokens for the public site and account page. */
+:root {
+  color-scheme: light;
+  --ink: #f5f5f3;
+  --night: #eeeee9;
+  --chalk: #20201e;
+  --mute: #696965;
+  --line: #dcdcd7;
+  --ember: #876649;
+  --surface: #fff;
+  --surface-soft: #eeeee9;
+  --surface-hover: #e4e4de;
+  --surface-pressed: #d7d7d0;
+  --strong-hover: #3b3b37;
+  --label: #4e4e49;
+  --accent-text: #327254;
+  --badge-line: #c8c8c1;
+  --icon-selection: #d7e6f3;
+  --panel-shadow: #20201e08;
+  --small-shadow: #20201e15;
+  --focus-border: #85857b;
+  --desk: #eaeae6;
+  --desk-bar: #deded8;
+  --desk-pressed: #cecec7;
+  --desk-time: #5d5d56;
+  --target: #f5f5f2;
+  --track: #dcdcd6;
+  --bar-muted: #a6a69c;
+  --radio: #a1a198;
+  --key-line: #d2d2cb;
+  --key-shadow: #dcdcd5;
+  --danger: #9f3535;
+  --danger-surface: #fff2ed;
+  --danger-line: #e5c4b9;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ink: #171816;
+  --night: #282b25;
+  --chalk: #eceee7;
+  --mute: #a6aaa1;
+  --line: #3c4037;
+  --ember: #cfa57d;
+  --surface: #20221e;
+  --surface-soft: #2c3027;
+  --surface-hover: #383e31;
+  --surface-pressed: #444d3b;
+  --strong-hover: #d6d9d1;
+  --label: #c2c8bd;
+  --accent-text: #93c1a4;
+  --badge-line: #555e4b;
+  --icon-selection: #243c51;
+  --panel-shadow: #00000026;
+  --small-shadow: #00000030;
+  --focus-border: #a6b19e;
+  --desk: #22261e;
+  --desk-bar: #303629;
+  --desk-pressed: #424d35;
+  --desk-time: #bdc7b5;
+  --target: #292e24;
+  --track: #414a35;
+  --bar-muted: #849674;
+  --radio: #889c77;
+  --key-line: #555f49;
+  --key-shadow: #10120e;
+  --danger: #f2a2a2;
+  --danger-surface: #352724;
+  --danger-line: #6c4940;
+}
+
+.theme-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  color: var(--mute);
+  flex: none;
+}
+.theme-control svg {
+  position: absolute;
+  left: 10px;
+  width: 15px;
+  height: 15px;
+  pointer-events: none;
+}
+.theme-control select {
+  min-height: 36px;
+  padding: 6px 5px 6px 31px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--chalk);
+  font: 12px var(--font-ui);
+  cursor: pointer;
+}
+.theme-control select:hover { background: var(--surface-soft); }
+.theme-control option { background: var(--surface); color: var(--chalk); }
+.download-link .download-platform { margin-left: 0; }
+.brand svg { flex: none; }
+
+@media (min-width: 761px) and (max-width: 1000px) {
+  .appbar-note { display: none; }
+}
+
+@media (max-width: 760px) {
+  .appbar-actions { gap: 8px; }
+  .theme-control select { width: 36px; height: 36px; padding: 0 0 0 34px; appearance: none; font-size: 16px; }
+  .theme-control option { font-size: 13px; }
+  .theme-control svg { left: 10px; }
+}
+@media (max-width: 380px) {
+  .download-link .download-platform { display: none; }
+}
