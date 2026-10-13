@@ -140,16 +140,18 @@ exactly `0.8`, lower confidence, malformed answers and processing errors all
 leave the file in place. The returned `confidence` is used directly, rather
 than the winning option's probability. Other files continue after a file fails.
 
-With **Sort obvious files on this Mac** on (the default), files whose category
-is beyond doubt never reach the service and use no AI check: default
-screenshot and screen-recording names (macOS in several languages, and
-CleanShot), source code, documents such as PDF, Word, Pages and spreadsheets,
-archives and installers, camera RAW photos, phone and camera photos and
-videos with default names such as `IMG_1234.HEIC`, and music formats such as
-MP3 and FLAC unless the name suggests a recording. Anything ambiguous, such as
-a plain `.png` (possibly a screenshot), an `.m4a` (possibly a voice memo) or a
-`.ts` (TypeScript or video), still goes to the AI. These moves use the same
-journal and undo, and the panel shows how many files were sorted on the Mac.
+With **Sort obvious files on this Mac** on (the default), known file types
+are sorted locally and use no AI check. Recognizable screenshot and
+screen-recording names (macOS in several languages, and CleanShot) take
+precedence over general media categories. Other images, including PNG, JPEG,
+HEIC, WebP, GIF, SVG and camera RAW files, go to Images. Common video and audio
+formats go to Videos and Audio unless the name suggests a recording. Documents,
+notes, Markdown and tabular data go to Docs; source code, markup and configuration
+files go to Code; archives and installers go to Other. macOS content types extend
+this coverage beyond the built-in extension lists. Unknown or ambiguous files,
+such as `.ts` (TypeScript or video) and media named like meetings or voice memos,
+still go to AI and retain the strict confidence threshold. These moves use the
+same journal and undo, and the panel shows how many files were sorted on the Mac.
 
 - Each pass scans only visible regular files directly in the chosen folder
   (the Desktop, unless AI Sort follows a Finder folder or you pick one
